@@ -15,12 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ImagePredictor : NSObject
 
+@property(nonatomic,assign, readonly) NSString* modelName;
 @property(nonatomic,assign, readonly) NSTimeInterval inferenceTime;
 @property(nonatomic,assign, readonly) CGSize imageSize;
 @property(nonatomic,assign, readonly) BOOL isPredicting;
 
-- (void)loadModel:(NSString* )modelPath andLabels:(NSString*) labelPath ;
-- (void)predict:(void* )rgbData completion:(void(^__nullable)( std::vector<std::tuple<float, std::string>> results))completion;
+- (BOOL)loadModel:(NSString* _Nonnull )modelPath andLabels:(NSString* _Nonnull) labelPath ;
+- (void)predict:(void* )rgbData completion:(void(^__nullable)(std::vector<std::tuple<float, std::string>>&& results))completion;
 
 @end
 

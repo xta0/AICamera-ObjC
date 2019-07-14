@@ -29,12 +29,15 @@
     
     //init Image predictor
     self.modelManager = [ImagePredictor new];
-    [self.modelManager loadModel:[[NSBundle mainBundle] pathForResource:@"resnet18" ofType:@"pt"]
-                       andLabels:[[NSBundle mainBundle] pathForResource:@"synset_words" ofType:@"txt"]];
+    if(![self.modelManager loadModel:[[NSBundle mainBundle] pathForResource:@"resnet18" ofType:@"pt"]
+                          andLabels:[[NSBundle mainBundle] pathForResource:@"lables" ofType:@"txt"]]){
+        NSAssert(FALSE, @"Can't load Pytorch model");
+        return;
+    }
     
     self.sessionManager = [CameraSessionManager new];
     self.sessionManager.delegate = self;
-//    self.sessionManager.generateSampleImage = YES;
+    self.sessionManager.generateSampleImage = YES;
     
     self.cameraPreview.videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
     self.cameraPreview.videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
@@ -62,19 +65,20 @@
 }
 
 - (void)cameraPermissionDenied {
-    
+    //TODO: display an alert
 }
 
 - (void)cameraSetupFailed {
-    
+    //TODO: display an alert
 }
 
 - (void)cameraSessionWasInterrupted {
-    
+    //TODO: restart the session
 }
 
 - (NSString* )status{
     NSString* status = @"";
+    status = [status stringByAppendingString:[NSString stringWithFormat:@"model: %@\n", self.modelManager.modelName]];
     status = [status stringByAppendingString:[NSString stringWithFormat:@"resolution: %d x %d\n",(int)self.sessionManager.cameraResulotion.width,(int)self.sessionManager.cameraResulotion.height]];
     status = [status stringByAppendingString:[NSString stringWithFormat:@"crop: %ld x %ld\n",(NSUInteger)self.modelManager.imageSize.width, (NSUInteger)self.modelManager.imageSize.height]];
     status = [status stringByAppendingString:[NSString stringWithFormat:@"preprocessing time: %.3f\n",self.sessionManager.prepareBuffer]];
@@ -85,7 +89,7 @@
 - (void)runPredict:(NSData* )tensor {
     __block NSString* content = @"";
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.modelManager predict:(void* )tensor.bytes completion:^(const std::vector<std::tuple<float, std::string>> results) {
+        [self.modelManager predict:(void* )tensor.bytes completion:^(std::vector<std::tuple<float, std::string>>&& results) {
             for(auto& result: results){
                 NSString* str = [NSString stringWithFormat:@"score: %.3f, label: %s \n", std::get<0>(result), std::get<1>(result).c_str()];
                 content = [content stringByAppendingString:str];

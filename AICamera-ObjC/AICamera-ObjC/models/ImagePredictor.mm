@@ -18,19 +18,29 @@
 - (CGSize)imageSize {
     return (CGSize){IMG_W, IMG_H};
 }
+- (NSString* )modelName{
+    return @"ResNet18";
+}
 
-- (void)loadModel:(NSString* )modelPath andLabels:(NSString*) labelPath {
+- (BOOL)loadModel:(NSString* )modelPath andLabels:(NSString*) labelPath {
+    if(!modelPath || !labelPath){
+        return NO;
+    }
     _module = torch::jit::load([modelPath cStringUsingEncoding:NSASCIIStringEncoding]);
     NSError* err;
     NSArray* labels = [[NSString stringWithContentsOfFile:labelPath
                                                  encoding:NSUTF8StringEncoding
                                                     error:&err] componentsSeparatedByString:@"\n"];
+    if(err){
+        return NO;
+    }
     for(NSString* label in labels){
         _labels.push_back({[label cStringUsingEncoding:NSUTF8StringEncoding]});
     }
+    return YES;
 }
 
-- (void)predict:(void* )data completion:(void(^__nullable)(std::vector<std::tuple<float, std::string>> results))completion{
+- (void)predict:(void* )data completion:(void(^__nullable)(std::vector<std::tuple<float, std::string>>&& results))completion{
     if(_isPredicting){
         return;
     }
@@ -46,7 +56,7 @@
     img_tensor[0][0].sub_(0.485).div_(0.229);
     img_tensor[0][1].sub_(0.456).div_(0.224);
     img_tensor[0][2].sub_(0.406).div_(0.225);
-    
+    // run forward
     std::vector<torch::jit::IValue> inputs{img_tensor};
     auto outputs= self->_module.forward(inputs).toTensor();
     self->_inferenceTime = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
@@ -64,9 +74,8 @@
     }
     _isPredicting = false;
     if(completion){
-        completion(results);
+        completion(std::move(results));
     }
-    
 }
 
 @end
