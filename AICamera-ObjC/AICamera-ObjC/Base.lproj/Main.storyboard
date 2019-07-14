@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_1" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NyK-Fe-9HD" customClass="CameraPreview">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <subviews>
+                                    <view alpha="0.69999999999999996" contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="LBa-QO-Um6">
+                                        <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="pytorch-logo-light.png" translatesAutoresizingMaskIntoConstraints="NO" id="O7k-76-NJa">
+                                                <rect key="frame" x="20" y="10" width="184" height="40"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" secondItem="O7k-76-NJa" secondAttribute="height" multiplier="23:5" id="gsC-ym-tNM"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="60" id="9uM-XU-EhM"/>
+                                            <constraint firstAttribute="bottom" secondItem="O7k-76-NJa" secondAttribute="bottom" constant="10" id="HIH-E3-61V"/>
+                                            <constraint firstItem="O7k-76-NJa" firstAttribute="top" secondItem="LBa-QO-Um6" secondAttribute="top" constant="10" id="Os5-AQ-ypL"/>
+                                            <constraint firstItem="O7k-76-NJa" firstAttribute="leading" secondItem="LBa-QO-Um6" secondAttribute="leading" constant="20" id="lY8-BQ-iz1"/>
+                                        </constraints>
+                                    </view>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" alpha="0.69999999999999996" contentMode="scaleToFill" editable="NO" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pzY-vo-Kvu">
+                                        <rect key="frame" x="0.0" y="60" width="414" height="80"/>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="80" id="F1u-8C-Yyp"/>
+                                        </constraints>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" alpha="0.69999999999999996" contentMode="scaleToFill" editable="NO" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="obf-kO-Spn">
+                                        <rect key="frame" x="0.0" y="658" width="414" height="160"/>
+                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="160" id="wgJ-8R-s0x"/>
+                                        </constraints>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="fez-RK-x7Q">
+                                        <rect key="frame" x="294" y="538" width="120" height="120"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="120" id="TeB-zh-IZe"/>
+                                            <constraint firstAttribute="height" constant="120" id="VkM-du-bAp"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="pzY-vo-Kvu" firstAttribute="leading" secondItem="NyK-Fe-9HD" secondAttribute="leading" id="AG5-Rq-u2u"/>
+                                    <constraint firstAttribute="trailing" secondItem="fez-RK-x7Q" secondAttribute="trailing" id="Peq-YT-wfr"/>
+                                    <constraint firstItem="LBa-QO-Um6" firstAttribute="leading" secondItem="NyK-Fe-9HD" secondAttribute="leading" id="b1J-GC-NAd"/>
+                                    <constraint firstAttribute="trailing" secondItem="pzY-vo-Kvu" secondAttribute="trailing" id="cAJ-me-g4v"/>
+                                    <constraint firstItem="pzY-vo-Kvu" firstAttribute="top" secondItem="LBa-QO-Um6" secondAttribute="bottom" id="cy2-Oy-u68"/>
+                                    <constraint firstAttribute="trailing" secondItem="obf-kO-Spn" secondAttribute="trailing" id="dgW-b2-GgI"/>
+                                    <constraint firstAttribute="trailing" secondItem="LBa-QO-Um6" secondAttribute="trailing" id="fYh-GZ-Y2c"/>
+                                    <constraint firstItem="LBa-QO-Um6" firstAttribute="top" secondItem="NyK-Fe-9HD" secondAttribute="top" id="gFM-nc-8dP"/>
+                                    <constraint firstItem="obf-kO-Spn" firstAttribute="leading" secondItem="NyK-Fe-9HD" secondAttribute="leading" id="ogV-0d-ahW"/>
+                                    <constraint firstItem="obf-kO-Spn" firstAttribute="top" secondItem="fez-RK-x7Q" secondAttribute="bottom" id="sfs-lG-JCY"/>
+                                    <constraint firstAttribute="bottom" secondItem="obf-kO-Spn" secondAttribute="bottom" id="tMG-CA-i7K"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="r6Y-K9-oCn" firstAttribute="trailing" secondItem="NyK-Fe-9HD" secondAttribute="trailing" id="KL0-hO-5hI"/>
+                            <constraint firstItem="NyK-Fe-9HD" firstAttribute="top" secondItem="r6Y-K9-oCn" secondAttribute="top" id="gB2-vF-egg"/>
+                            <constraint firstItem="NyK-Fe-9HD" firstAttribute="leading" secondItem="r6Y-K9-oCn" secondAttribute="leading" id="kdK-2r-s5J"/>
+                            <constraint firstItem="r6Y-K9-oCn" firstAttribute="bottom" secondItem="NyK-Fe-9HD" secondAttribute="bottom" id="y2H-ma-J5M"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="r6Y-K9-oCn"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="vmF-dZ-EhR"/>
+                    <connections>
+                        <outlet property="cameraPreview" destination="NyK-Fe-9HD" id="gCy-m5-BOH"/>
+                        <outlet property="resultView" destination="obf-kO-Spn" id="hWD-zs-9P0"/>
+                        <outlet property="sampleImageView" destination="fez-RK-x7Q" id="Xrn-jr-Kg5"/>
+                        <outlet property="statusView" destination="pzY-vo-Kvu" id="Fao-cv-VXu"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-323.1884057971015" y="-552.45535714285711"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="pytorch-logo-light.png" width="230" height="50"/>
+    </resources>
+</document>
