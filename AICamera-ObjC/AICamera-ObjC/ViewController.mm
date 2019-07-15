@@ -81,7 +81,7 @@
     status = [status stringByAppendingString:[NSString stringWithFormat:@"model: %@\n", self.modelManager.modelName]];
     status = [status stringByAppendingString:[NSString stringWithFormat:@"resolution: %d x %d\n",(int)self.sessionManager.cameraResulotion.width,(int)self.sessionManager.cameraResulotion.height]];
     status = [status stringByAppendingString:[NSString stringWithFormat:@"crop: %ld x %ld\n",(NSUInteger)self.modelManager.imageSize.width, (NSUInteger)self.modelManager.imageSize.height]];
-    status = [status stringByAppendingString:[NSString stringWithFormat:@"preprocessing time: %.3f\n",self.sessionManager.prepareBuffer]];
+    status = [status stringByAppendingString:[NSString stringWithFormat:@"preprocessing time: %.3fs\n",self.sessionManager.prepareBuffer]];
     status = [status stringByAppendingString:[NSString stringWithFormat:@"inference time: %.3f\n",self.modelManager.inferenceTime]];
     return status;
 }
