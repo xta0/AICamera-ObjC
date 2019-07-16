@@ -174,13 +174,13 @@
         _cameraResulotion = getCameraResolution(pixelBuffer);
         std::clock_t start;
         start = std::clock();
-        CVPixelBufferRef resultBuffer = croppedPixelBuffer(pixelBuffer, IMG_W, IMG_H);
-        NSData* data = tensorData(resultBuffer, IMG_W, IMG_H);
+        CVPixelBufferRef croppedBuffer = createPixelBufferForTensor(pixelBuffer, IMG_W, IMG_H);
+        auto data = tensorData(croppedBuffer, IMG_W, IMG_H);
         UIImage* sampleImage = nil;
         if(self.generateSampleImage){
-            //create another buffer for image
-            sampleImage = rgbImage2(resultBuffer,IMG_W,IMG_H);
+            sampleImage = rgbImage2(croppedBuffer,IMG_W,IMG_H);
         }
+        CVPixelBufferRelease(croppedBuffer);
         _prepareBuffer = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         if(data){
             if([self.delegate respondsToSelector:@selector(cameraDidReceivePixelBuffer:sampleImage:)]){

@@ -11,9 +11,11 @@
 #import <AVFoundation/AVFoundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <CoreImage/CoreImage.h>
+#include <memory>
 
-void g_releaseCVPixelBuffer(void * CV_NULLABLE releaseRefCon, const void * CV_NULLABLE baseAddress);
+void g_cvPixelBufferReleaseCallback(void * __nullable releaseRefCon, const void * __nullable baseAddress);
 void g_dataProviderReleaseCallback(void * __nullable info, const void * __nullable  data, size_t size);
+void g_callocReleaseCallback(void* __nullable p);
 
 static inline CGSize getCameraResolution(CVPixelBufferRef _Nonnull pixelBuffer){
     static dispatch_once_t onceToken;
@@ -26,7 +28,7 @@ static inline CGSize getCameraResolution(CVPixelBufferRef _Nonnull pixelBuffer){
     return (CGSize){(CGFloat)width,(CGFloat)height};
 }
 
-static inline CVPixelBufferRef _Nullable croppedPixelBuffer(CVPixelBufferRef _Nonnull pixelBuffer ,size_t width, size_t height) {
+static inline CVPixelBufferRef _Nullable createPixelBufferForTensor(CVPixelBufferRef _Nonnull pixelBuffer ,size_t width, size_t height) {
     size_t imageWidth = CVPixelBufferGetWidth(pixelBuffer);
     size_t imageHeight = CVPixelBufferGetHeight(pixelBuffer);
     NSCAssert(CVPixelBufferGetPixelFormatType(pixelBuffer) == kCMPixelFormat_32BGRA, @"Pixel buffer is in wrong format");
@@ -44,7 +46,7 @@ static inline CVPixelBufferRef _Nullable croppedPixelBuffer(CVPixelBufferRef _No
     void* baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
     NSUInteger startpos = originY * bytesPerRow + originX*bytesPerPixel;
     vImage_Buffer inBuff = { (uint8_t* )baseAddress + startpos, croppedImageSize, croppedImageSize, bytesPerRow };
-    uint8_t *dstData = (uint8_t*)calloc(width*height*bytesPerPixel, sizeof(uint8_t));
+    uint8_t *dstData = (uint8_t*)calloc(width*height*bytesPerPixel, sizeof(uint8_t)); //will be freed by g_cvPixelBufferReleaseCallback
     vImage_Buffer outBuff = {dstData, width, height, bytesPerPixel*width};
     vImage_Error err = vImageScale_ARGB8888(&inBuff, &outBuff, NULL, 0);
     CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
@@ -58,7 +60,7 @@ static inline CVPixelBufferRef _Nullable croppedPixelBuffer(CVPixelBufferRef _No
                                  pixelType,
                                  dstData,
                                  width*4,
-                                 g_releaseCVPixelBuffer, nil, nil,
+                                 g_cvPixelBufferReleaseCallback, nil, nil,
                                  &dstPixelBuffer);
     
     if(status != kCVReturnSuccess){
@@ -68,25 +70,38 @@ static inline CVPixelBufferRef _Nullable croppedPixelBuffer(CVPixelBufferRef _No
     return dstPixelBuffer;
 }
 
-static inline NSData* _Nullable tensorData(CVPixelBufferRef _Nonnull pixelBuff, int w, int h) {
+//static inline uint8_t* _Nullable tensorData(CVPixelBufferRef _Nonnull pixelBuff, int w, int h) {
+//    CVPixelBufferLockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
+//    uint8_t* srcData = (uint8_t* )CVPixelBufferGetBaseAddress(pixelBuff);
+//    auto dstData = (uint8_t* )calloc(w*h*3,sizeof(uint8_t));
+//    if(dstData){
+//        for(int i=0;i<w*h;++i){
+//            //remove alpha channel
+//            dstData[i*3+0] = srcData[i*4+2]; //R
+//            dstData[i*3+1] = srcData[i*4+1]; //G
+//            dstData[i*3+2] = srcData[i*4+0]; //B
+//        }
+//    }
+//    CVPixelBufferUnlockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
+//    return dstData;
+//}
+static inline std::shared_ptr<uint8_t> tensorData(CVPixelBufferRef _Nonnull pixelBuff, int w, int h) {
     CVPixelBufferLockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
     uint8_t* srcData = (uint8_t* )CVPixelBufferGetBaseAddress(pixelBuff);
-    uint8_t* dstData = (uint8_t* )calloc(w*h*3,sizeof(uint8_t));
+    std::shared_ptr<uint8_t> dstData((uint8_t* )calloc(w*h*3,sizeof(uint8_t)),g_callocReleaseCallback);
     if(dstData){
         for(int i=0;i<w*h;++i){
             //remove alpha channel
-            dstData[i*3+0] = srcData[i*4+2]; //R
-            dstData[i*3+1] = srcData[i*4+1]; //G
-            dstData[i*3+2] = srcData[i*4+0]; //B
+            dstData.get()[i*3+0] = srcData[i*4+2]; //R
+            dstData.get()[i*3+1] = srcData[i*4+1]; //G
+            dstData.get()[i*3+2] = srcData[i*4+0]; //B
         }
     }
-    NSData* tensor = [NSData dataWithBytesNoCopy:dstData length:w*h*3*sizeof(uint8_t)];
     CVPixelBufferUnlockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
-    return tensor;
+    return dstData;
 }
 
 static inline UIImage* _Nullable rgbImage(CVPixelBufferRef _Nonnull pixelBuff, size_t w, size_t h){
-    
     CVPixelBufferLockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
     CIImage* ciImage = [CIImage imageWithCVPixelBuffer:pixelBuff];
     CIContext* ciContext = [CIContext contextWithOptions:nil];
@@ -98,9 +113,10 @@ static inline UIImage* _Nullable rgbImage(CVPixelBufferRef _Nonnull pixelBuff, s
 }
 
 static inline UIImage* _Nullable rgbImage2(CVPixelBufferRef _Nonnull pixelBuff, size_t w, size_t h){
-    
     CVPixelBufferLockBaseAddress(pixelBuff, kCVPixelBufferLock_ReadOnly);
-    uint8_t* dstData = (uint8_t* )CVPixelBufferGetBaseAddress(pixelBuff);
+    uint8_t* dstData = (uint8_t* )calloc(w*h*4, sizeof(uint8_t)); //will be freed by CGDataProviderRef
+    uint8_t* srcData = (uint8_t* )CVPixelBufferGetBaseAddress(pixelBuff);
+    memcpy(dstData,srcData,w*h*4*sizeof(uint8_t));
     for(int i=0;i<w*h;++i){
         std::swap(dstData[i*4+0],dstData[i*4+2]); //32BGRA -> 32RGBA
     }
@@ -111,6 +127,8 @@ static inline UIImage* _Nullable rgbImage2(CVPixelBufferRef _Nonnull pixelBuff, 
     CVPixelBufferUnlockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
     UIImage* image =  [UIImage imageWithCGImage:cgImage];
     CGImageRelease(cgImage);
+    CGDataProviderRelease(dataProvider);
+    CVPixelBufferUnlockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
     return image;
 }
 

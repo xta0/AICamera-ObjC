@@ -6,6 +6,10 @@
 #import <torch/script.h>
 #include <ctime>
 
+
+@interface ImagePredictor()
+@end
+
 @implementation ImagePredictor{
     torch::jit::script::Module _module;
     std::vector<std::string> _labels;
@@ -40,14 +44,15 @@
     return YES;
 }
 
-- (void)predict:(void* )data completion:(void(^__nullable)(std::vector<std::tuple<float, std::string>>&& results))completion{
+- (void)predict:(std::shared_ptr<uint8_t>)rawData completion:(void(^__nullable)(std::vector<std::tuple<float, std::string>>&& results))completion{
     if(_isPredicting){
         return;
     }
-    _isPredicting = true;
+    self->_isPredicting = true;
     std::clock_t start;
     start = std::clock();
-    at::Tensor img_tensor = torch::from_blob(data, {1, IMG_W, IMG_H, IMG_C}, at::kByte).clone();
+    std::shared_ptr<uint8_t> tensorBuffer(rawData);
+    at::Tensor img_tensor = torch::from_blob(tensorBuffer.get(), {1, IMG_W, IMG_H, IMG_C}, at::kByte).clone();
     // pixel buffer is in WxHxC, make it CxWxH
     img_tensor = img_tensor.permute({0,3,1,2});
     img_tensor = img_tensor.toType(at::kFloat);
@@ -72,7 +77,7 @@
             self->_labels[idxs[i].item().toInt()]
         });
     }
-    _isPredicting = false;
+    self->_isPredicting = false;
     if(completion){
         completion(std::move(results));
     }

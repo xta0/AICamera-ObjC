@@ -5,6 +5,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import <memory>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,7 +16,7 @@ typedef NS_ENUM(NSUInteger, CameraSetupResult) {
 };
 
 @protocol CameraSeesion <NSObject>
-- (void)cameraDidReceivePixelBuffer:(NSData*) pixels sampleImage:(UIImage* _Nullable)image;
+- (void)cameraDidReceivePixelBuffer:(std::shared_ptr<uint8_t>) pixels sampleImage:(UIImage* _Nullable)image;
 - (void)cameraPermissionDenied;
 - (void)cameraSetupFailed;
 - (void)cameraSessionWasInterrupted;

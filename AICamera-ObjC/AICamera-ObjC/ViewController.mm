@@ -8,6 +8,7 @@
 #import "CameraSessionManager.h"
 #import "ImagePredictor.h"
 #import "CameraHelper.h"
+#import <memory>
 
 
 @interface ViewController ()<CameraSeesion>
@@ -26,7 +27,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     //init Image predictor
     self.modelManager = [ImagePredictor new];
     if(![self.modelManager loadModel:[[NSBundle mainBundle] pathForResource:@"resnet18" ofType:@"pt"]
@@ -34,12 +34,10 @@
         NSAssert(FALSE, @"Can't load Pytorch model");
         return;
     }
-    
     self.sessionManager = [CameraSessionManager new];
     self.sessionManager.delegate = self;
-    self.sessionManager.generateSampleImage = YES;
     
-    self.cameraPreview.videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+    self.cameraPreview.videoPrevig_callocReleaseCallbackewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
     self.cameraPreview.videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     self.cameraPreview.session = self.sessionManager.session;
 }
@@ -54,14 +52,24 @@
     [self.sessionManager stopSession];
 }
 
-- (void)cameraDidReceivePixelBuffer:(NSData *)tensor sampleImage:(UIImage *)image {
+- (void)cameraDidReceivePixelBuffer:(std::shared_ptr<uint8_t>)tensor sampleImage:(UIImage *)image {
     dispatch_async(dispatch_get_main_queue(), ^{
         self.statusView.text = [self status];
         if(image){
             self.sampleImageView.image = image;
         }
-        [self runPredict: tensor];
     });
+    __block NSString* content = @"";
+    [self.modelManager predict:tensor
+                    completion:^(std::vector<std::tuple<float, std::string>>&& results) {
+        for(auto& result: results){
+            NSString* str = [NSString stringWithFormat:@"score: %.3f, label: %s \n", std::get<0>(result), std::get<1>(result).c_str()];
+            content = [content stringByAppendingString:str];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.resultView.text = content;
+            });
+        }
+    }];
 }
 
 - (void)cameraPermissionDenied {
@@ -85,22 +93,5 @@
     status = [status stringByAppendingString:[NSString stringWithFormat:@"inference time: %.3f\n",self.modelManager.inferenceTime]];
     return status;
 }
-
-- (void)runPredict:(NSData* )tensor {
-    __block NSString* content = @"";
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.modelManager predict:(void* )tensor.bytes completion:^(std::vector<std::tuple<float, std::string>>&& results) {
-            for(auto& result: results){
-                NSString* str = [NSString stringWithFormat:@"score: %.3f, label: %s \n", std::get<0>(result), std::get<1>(result).c_str()];
-                content = [content stringByAppendingString:str];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    self.resultView.text = content;
-                });
-            }
-        }];
-    });
-}
-
-
 
 @end
