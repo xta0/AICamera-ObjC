@@ -1,3 +1,5 @@
 # AICamera
 Demonstration of using Pytorch inside an iOS application.
-![](./aicamera.mp4)
+
+<img src="./aicamera.gif" width="400">
+
