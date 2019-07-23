@@ -61,4 +61,4 @@ fastlane/test_output
 # https://github.com/johnno1962/injectionforxcode
 
 iOSInjectionProject/
-libs-no-caffe-ios/
+#libs-no-caffe-ios/

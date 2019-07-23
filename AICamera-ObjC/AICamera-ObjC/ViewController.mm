@@ -37,7 +37,7 @@
     self.sessionManager = [CameraSessionManager new];
     self.sessionManager.delegate = self;
     
-    self.cameraPreview.videoPrevig_callocReleaseCallbackewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+    self.cameraPreview.videoPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
     self.cameraPreview.videoPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     self.cameraPreview.session = self.sessionManager.session;
 }
@@ -60,13 +60,14 @@
         }
     });
     __block NSString* content = @"";
+    __weak typeof(self) weakSelf = self;
     [self.modelManager predict:tensor
                     completion:^(std::vector<std::tuple<float, std::string>>&& results) {
         for(auto& result: results){
             NSString* str = [NSString stringWithFormat:@"score: %.3f, label: %s \n", std::get<0>(result), std::get<1>(result).c_str()];
             content = [content stringByAppendingString:str];
             dispatch_async(dispatch_get_main_queue(), ^{
-                self.resultView.text = content;
+                weakSelf.resultView.text = content;
             });
         }
     }];
