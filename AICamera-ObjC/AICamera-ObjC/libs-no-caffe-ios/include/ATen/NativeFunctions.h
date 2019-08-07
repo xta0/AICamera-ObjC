@@ -57,6 +57,9 @@ CAFFE2_API Tensor _cast_Short(const Tensor & self, bool non_blocking=false);
 CAFFE2_API Tensor _cast_Half(const Tensor & self, bool non_blocking=false);
 CAFFE2_API void backward(const Tensor & self, const Tensor & gradient={}, bool keep_graph=false, bool create_graph=false);
 CAFFE2_API void set_data(const Tensor & self, const Tensor & new_data);
+#ifdef BUILD_NAMEDTENSOR
+CAFFE2_API Tensor & set_names_(Tensor & self, c10::optional<DimnameList> names);
+#endif
 CAFFE2_API std::tuple<Tensor,Tensor> _cudnn_ctc_loss(const Tensor & log_probs, const Tensor & targets, IntArrayRef input_lengths, IntArrayRef target_lengths, int64_t blank, bool deterministic, bool zero_infinity);
 CAFFE2_API Tensor _cudnn_rnn_flatten_weight(TensorList weight_arr, int64_t weight_stride0, int64_t input_size, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, bool bidirectional);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> _cudnn_rnn(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & weight_buf, const Tensor & hx, const Tensor & cx, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state);
@@ -156,6 +159,9 @@ CAFFE2_API Tensor binary_cross_entropy_with_logits(const Tensor & self, const Te
 CAFFE2_API Tensor binary_cross_entropy_with_logits_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight={}, const Tensor & pos_weight={}, int64_t reduction=Reduction::Mean);
 CAFFE2_API Tensor _bincount_cpu(const Tensor & self, const Tensor & weights={}, int64_t minlength=0);
 CAFFE2_API Tensor _bincount_cuda(const Tensor & self, const Tensor & weights={}, int64_t minlength=0);
+CAFFE2_API Tensor bitwise_not(const Tensor & self);
+CAFFE2_API Tensor & bitwise_not_(Tensor & self);
+CAFFE2_API Tensor & bitwise_not_out(Tensor & out, const Tensor & self);
 CAFFE2_API Tensor blackman_window(int64_t window_length, const TensorOptions & options={});
 CAFFE2_API Tensor blackman_window(int64_t window_length, bool periodic, const TensorOptions & options={});
 CAFFE2_API Tensor bmm_cpu(const Tensor & self, const Tensor & mat2);
@@ -244,6 +250,7 @@ CAFFE2_API Tensor det(const Tensor & self);
 CAFFE2_API Tensor diag_embed(const Tensor & self, int64_t offset=0, int64_t dim1=-2, int64_t dim2=-1);
 CAFFE2_API Tensor diagflat(const Tensor & self, int64_t offset=0);
 CAFFE2_API Tensor diagonal(const Tensor & self, int64_t offset=0, int64_t dim1=0, int64_t dim2=1);
+CAFFE2_API Tensor & fill_diagonal_(Tensor & self, Scalar fill_value, bool wrap=false);
 CAFFE2_API Tensor div(const Tensor & self, const Tensor & other);
 CAFFE2_API Tensor & div_(Tensor & self, const Tensor & other);
 CAFFE2_API Tensor & div_out(Tensor & out, const Tensor & self, const Tensor & other);
@@ -267,7 +274,7 @@ CAFFE2_API Tensor _embedding_bag_dense_backward_cpu(const Tensor & grad, const T
 CAFFE2_API Tensor _embedding_bag_dense_backward_cuda(const Tensor & grad, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, const Tensor & bag_size, const Tensor & maximum_indices, int64_t num_weights, bool scale_grad_by_freq, int64_t mode, const Tensor & per_sample_weights);
 CAFFE2_API Tensor _embedding_bag_per_sample_weights_backward_cpu(const Tensor & grad, const Tensor & weight, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, int64_t mode);
 CAFFE2_API Tensor _embedding_bag_per_sample_weights_backward_cuda(const Tensor & grad, const Tensor & weight, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, int64_t mode);
-#ifdef NAMEDTENSOR_ENABLED
+#ifdef BUILD_NAMEDTENSOR
 CAFFE2_API Tensor empty(IntArrayRef size, c10::optional<DimnameList> names, const TensorOptions & options={});
 #endif
 CAFFE2_API Tensor empty_cpu(IntArrayRef size, const TensorOptions & options={}, c10::optional<MemoryFormat> memory_format=c10::nullopt);
@@ -388,6 +395,8 @@ CAFFE2_API Tensor linear(const Tensor & input, const Tensor & weight, const Tens
 CAFFE2_API Tensor mkldnn_linear(const Tensor & input, const Tensor & weight, const Tensor & bias={});
 CAFFE2_API Tensor fbgemm_linear_int8_weight(const Tensor & input, const Tensor & weight, const Tensor & packed, const Tensor & col_offsets, Scalar weight_scale, Scalar weight_zero_point, const Tensor & bias);
 CAFFE2_API std::tuple<Tensor,Tensor,double,int64_t> fbgemm_linear_quantize_weight(const Tensor & input);
+CAFFE2_API Tensor fbgemm_pack_gemm_matrix_fp16(const Tensor & input);
+CAFFE2_API Tensor fbgemm_linear_fp16_weight(const Tensor & input, const Tensor & packed_weight, const Tensor & bias);
 CAFFE2_API Tensor fbgemm_pack_quantized_matrix(const Tensor & input, int64_t K, int64_t N);
 CAFFE2_API bool fbgemm_is_cpu_supported();
 CAFFE2_API Tensor linspace(Scalar start, Scalar end, int64_t steps=100, const TensorOptions & options={});
@@ -439,6 +448,7 @@ CAFFE2_API std::tuple<Tensor,Tensor> max_pool1d_with_indices(const Tensor & self
 CAFFE2_API Tensor max_pool1d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
 CAFFE2_API Tensor max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
 CAFFE2_API Tensor mkldnn_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
+CAFFE2_API Tensor quantized_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1);
 CAFFE2_API Tensor max_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
 CAFFE2_API Tensor mean(const Tensor & self, c10::optional<ScalarType> dtype=c10::nullopt);
 CAFFE2_API Tensor mean(const Tensor & self, IntArrayRef dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
@@ -467,6 +477,8 @@ CAFFE2_API Tensor miopen_depthwise_convolution(const Tensor & self, const Tensor
 CAFFE2_API Tensor miopen_depthwise_convolution_backward_input(IntArrayRef self_size, const Tensor & grad_output, const Tensor & weight, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor> miopen_depthwise_convolution_backward(const Tensor & self, const Tensor & grad_output, const Tensor & weight, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, std::array<bool,3> output_mask);
 CAFFE2_API Tensor miopen_depthwise_convolution_backward_weight(IntArrayRef weight_size, const Tensor & grad_output, const Tensor & self, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic);
+CAFFE2_API std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> miopen_rnn(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & hx, const Tensor & cx, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state);
+CAFFE2_API std::tuple<Tensor,Tensor,Tensor,std::vector<Tensor>> miopen_rnn_backward(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & weight_buf, const Tensor & hx, const Tensor & cx, const Tensor & output, const Tensor & grad_output, const Tensor & grad_hy, const Tensor & grad_cy, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state, const Tensor & reserve, std::array<bool,4> output_mask);
 CAFFE2_API Tensor _sparse_mm(const Tensor & self, const Tensor & mat2);
 CAFFE2_API Tensor & _sparse_mm_out(Tensor & out, const Tensor & self, const Tensor & mat2);
 CAFFE2_API Tensor _sparse_mm(const Tensor & sparse, const Tensor & dense);
@@ -491,6 +503,7 @@ CAFFE2_API std::tuple<Tensor,Tensor,Tensor> mkldnn_batch_norm(const Tensor & inp
 CAFFE2_API std::tuple<Tensor,Tensor> batch_norm_stats_cuda(const Tensor & input, double eps);
 CAFFE2_API Tensor batch_norm_elemt_cuda(const Tensor & input, const Tensor & weight, const Tensor & bias, const Tensor & mean, const Tensor & invstd, double eps);
 CAFFE2_API std::tuple<Tensor,Tensor> batch_norm_gather_stats_cuda(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, int64_t count);
+CAFFE2_API std::tuple<Tensor,Tensor> batch_norm_gather_stats_with_counts_cuda(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, IntArrayRef counts);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor> batch_norm_backward_cpu(const Tensor & grad_out, const Tensor & input, const Tensor & weight, const Tensor & running_mean, const Tensor & running_var, const Tensor & save_mean, const Tensor & save_invstd, bool train, double eps, std::array<bool,3> output_mask);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor> batch_norm_backward_cuda(const Tensor & grad_out, const Tensor & input, const Tensor & weight, const Tensor & running_mean, const Tensor & running_var, const Tensor & save_mean, const Tensor & save_invstd, bool train, double eps, std::array<bool,3> output_mask);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor,Tensor> batch_norm_backward_reduce_cuda(const Tensor & grad_out, const Tensor & input, const Tensor & mean, const Tensor & invstd, bool input_g, bool weight_g, bool bias_g);
@@ -516,6 +529,7 @@ CAFFE2_API Tensor cosine_similarity(const Tensor & x1, const Tensor & x2, int64_
 CAFFE2_API Tensor permute(const Tensor & self, IntArrayRef dims);
 CAFFE2_API Tensor numpy_T(const Tensor & self);
 CAFFE2_API Tensor pixel_shuffle(const Tensor & self, int64_t upscale_factor);
+CAFFE2_API bool is_pinned(const Tensor & self);
 CAFFE2_API Tensor pin_memory(const Tensor & self);
 CAFFE2_API Tensor pinverse(const Tensor & self, double rcond=1e-15);
 CAFFE2_API Tensor poisson_nll_loss(const Tensor & input, const Tensor & target, bool log_input, bool full, double eps, int64_t reduction);
@@ -580,6 +594,7 @@ CAFFE2_API Tensor rrelu(const Tensor & self, Scalar lower=0.125, Scalar upper=0.
 CAFFE2_API Tensor & rrelu_(Tensor & self, Scalar lower=0.125, Scalar upper=0.3333333333333333, bool training=false, Generator * generator=nullptr);
 CAFFE2_API Tensor relu(const Tensor & self);
 CAFFE2_API Tensor mkldnn_relu(const Tensor & self);
+CAFFE2_API Tensor quantized_relu(const Tensor & self);
 CAFFE2_API Tensor & relu_(Tensor & self);
 CAFFE2_API Tensor & mkldnn_relu_(Tensor & self);
 CAFFE2_API Tensor prelu_cpu(const Tensor & self, const Tensor & weight);
@@ -599,7 +614,7 @@ CAFFE2_API Tensor & _rsqrt__cpu(Tensor & self);
 CAFFE2_API Tensor & _rsqrt__cuda(Tensor & self);
 CAFFE2_API Tensor & _rsqrt_out_cpu(Tensor & out, const Tensor & self);
 CAFFE2_API Tensor & _rsqrt_out_cuda(Tensor & out, const Tensor & self);
-#ifdef NAMEDTENSOR_ENABLED
+#ifdef BUILD_NAMEDTENSOR
 CAFFE2_API Tensor select(const Tensor & self, Dimname dim, int64_t index);
 #endif
 CAFFE2_API Tensor select(const Tensor & self, int64_t dim, int64_t index);
@@ -627,6 +642,9 @@ CAFFE2_API Tensor & _sinh_out_cuda(Tensor & out, const Tensor & self);
 CAFFE2_API Tensor detach(const Tensor & self);
 CAFFE2_API Tensor & detach_(Tensor & self);
 CAFFE2_API int64_t size(const Tensor & self, int64_t dim);
+#ifdef BUILD_NAMEDTENSOR
+CAFFE2_API int64_t size(const Tensor & self, Dimname dim);
+#endif
 CAFFE2_API Tensor slice(const Tensor & self, int64_t dim=0, int64_t start=0, int64_t end=9223372036854775807, int64_t step=1);
 CAFFE2_API std::tuple<Tensor,Tensor> slogdet(const Tensor & self);
 CAFFE2_API Tensor smm(const Tensor & self, const Tensor & mat2);
@@ -661,9 +679,18 @@ CAFFE2_API Tensor stack(TensorList tensors, int64_t dim=0);
 CAFFE2_API Tensor & stack_out(Tensor & out, TensorList tensors, int64_t dim=0);
 CAFFE2_API Tensor stft(const Tensor & self, int64_t n_fft, c10::optional<int64_t> hop_length=c10::nullopt, c10::optional<int64_t> win_length=c10::nullopt, const Tensor & window={}, bool normalized=false, bool onesided=true);
 CAFFE2_API int64_t stride(const Tensor & self, int64_t dim);
+#ifdef BUILD_NAMEDTENSOR
+CAFFE2_API int64_t stride(const Tensor & self, Dimname dim);
+#endif
 CAFFE2_API Tensor sum(const Tensor & self, c10::optional<ScalarType> dtype=c10::nullopt);
 CAFFE2_API Tensor sum(const Tensor & self, IntArrayRef dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#ifdef BUILD_NAMEDTENSOR
+CAFFE2_API Tensor sum(const Tensor & self, DimnameList dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
 CAFFE2_API Tensor & sum_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#ifdef BUILD_NAMEDTENSOR
+CAFFE2_API Tensor & sum_out(Tensor & out, const Tensor & self, DimnameList dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
 CAFFE2_API Tensor sum_to_size(const Tensor & self, IntArrayRef size);
 CAFFE2_API Tensor sqrt(const Tensor & self);
 CAFFE2_API Tensor & _sqrt__cpu(Tensor & self);
@@ -678,6 +705,12 @@ CAFFE2_API Tensor & std_out(Tensor & out, const Tensor & self, IntArrayRef dim, 
 CAFFE2_API Tensor prod(const Tensor & self, c10::optional<ScalarType> dtype=c10::nullopt);
 CAFFE2_API Tensor prod(const Tensor & self, int64_t dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
 CAFFE2_API Tensor & prod_out(Tensor & out, const Tensor & self, int64_t dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#ifdef BUILD_NAMEDTENSOR
+CAFFE2_API Tensor prod(const Tensor & self, Dimname dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
+#ifdef BUILD_NAMEDTENSOR
+CAFFE2_API Tensor & prod_out(Tensor & out, const Tensor & self, Dimname dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
 CAFFE2_API Tensor t(const Tensor & self);
 CAFFE2_API Tensor & t_(Tensor & self);
 CAFFE2_API Tensor tan(const Tensor & self);
@@ -715,7 +748,7 @@ CAFFE2_API Tensor & _trunc__cuda(Tensor & self);
 CAFFE2_API Tensor & _trunc_out_cpu(Tensor & out, const Tensor & self);
 CAFFE2_API Tensor & _trunc_out_cuda(Tensor & out, const Tensor & self);
 CAFFE2_API Tensor type_as(const Tensor & self, const Tensor & other);
-CAFFE2_API bool _has_same_tensorimpl_type(const Tensor & self, const Tensor & other);
+CAFFE2_API bool _has_compatible_shallow_copy_type(const Tensor & self, const Tensor & from);
 CAFFE2_API std::tuple<Tensor,Tensor> _unique_cpu(const Tensor & self, bool sorted=true, bool return_inverse=false);
 CAFFE2_API std::tuple<Tensor,Tensor> _unique_cuda(const Tensor & self, bool sorted=true, bool return_inverse=false);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor> unique_dim_cpu(const Tensor & self, int64_t dim, bool sorted=true, bool return_inverse=false, bool return_counts=false);
@@ -736,6 +769,7 @@ CAFFE2_API std::tuple<Tensor,Tensor> var_mean(const Tensor & self, bool unbiased
 CAFFE2_API std::tuple<Tensor,Tensor> var_mean(const Tensor & self, IntArrayRef dim, bool unbiased=true, bool keepdim=false);
 CAFFE2_API Tensor view_as(const Tensor & self, const Tensor & other);
 CAFFE2_API Tensor where(const Tensor & condition, const Tensor & self, const Tensor & other);
+CAFFE2_API std::vector<Tensor> where(const Tensor & condition);
 CAFFE2_API Tensor _s_where_cpu(const Tensor & condition, const Tensor & self, const Tensor & other);
 CAFFE2_API Tensor _s_where_cuda(const Tensor & condition, const Tensor & self, const Tensor & other);
 CAFFE2_API Tensor norm_except_dim(const Tensor & v, int64_t pow=2, int64_t dim=0);
@@ -777,8 +811,12 @@ CAFFE2_API Tensor nuclear_norm(const Tensor & self, bool keepdim=false);
 CAFFE2_API Tensor & nuclear_norm_out(Tensor & out, const Tensor & self, bool keepdim=false);
 CAFFE2_API Tensor nuclear_norm(const Tensor & self, IntArrayRef dim, bool keepdim=false);
 CAFFE2_API Tensor & nuclear_norm_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim=false);
+CAFFE2_API Tensor clone(const Tensor & self);
 CAFFE2_API Tensor mkldnn_clone(const Tensor & self);
+CAFFE2_API Tensor quantized_clone(const Tensor & self);
 CAFFE2_API Tensor clone_sparse(const Tensor & self);
+CAFFE2_API Tensor & resize_as_cpu_(Tensor & self, const Tensor & the_template);
+CAFFE2_API Tensor & resize_as_cuda_(Tensor & self, const Tensor & the_template);
 CAFFE2_API Tensor & resize_as_sparse_(Tensor & self, const Tensor & the_template);
 CAFFE2_API Tensor & pow_out_sparse_scalar(Tensor & out, const Tensor & self, Scalar exponent);
 CAFFE2_API Tensor pow_sparse_scalar(const Tensor & self, Scalar exponent);
@@ -848,6 +886,10 @@ CAFFE2_API int64_t q_zero_point_quant(const Tensor & self);
 CAFFE2_API Tensor int_repr_quant(const Tensor & self);
 CAFFE2_API Tensor per_tensor_affine_qtensor_cpu(const Tensor & self, double scale, int64_t zero_point);
 CAFFE2_API QScheme qscheme_quant(const Tensor & self);
+CAFFE2_API Tensor fake_quantize_per_tensor_affine_cpu(const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max);
+CAFFE2_API Tensor fake_quantize_per_tensor_affine_cuda(const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max);
+CAFFE2_API Tensor fake_quantize_per_tensor_affine_backward_cpu(const Tensor & grad, const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max);
+CAFFE2_API Tensor fake_quantize_per_tensor_affine_backward_cuda(const Tensor & grad, const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max);
 CAFFE2_API Tensor to(const Tensor & self, const TensorOptions & options, bool non_blocking=false, bool copy=false);
 CAFFE2_API Tensor to(const Tensor & self, Device device, ScalarType dtype, bool non_blocking=false, bool copy=false);
 CAFFE2_API Tensor to(const Tensor & self, ScalarType dtype, bool non_blocking=false, bool copy=false);
@@ -874,7 +916,9 @@ CAFFE2_API std::tuple<Tensor,Tensor> lstm_cell(const Tensor & input, TensorList 
 CAFFE2_API Tensor gru_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih={}, const Tensor & b_hh={});
 CAFFE2_API Tensor rnn_tanh_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih={}, const Tensor & b_hh={});
 CAFFE2_API Tensor rnn_relu_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih={}, const Tensor & b_hh={});
-CAFFE2_API std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first);
+CAFFE2_API std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first, c10::optional<ScalarType> dtype=c10::nullopt);
+CAFFE2_API std::tuple<Tensor,Tensor> quantized_gru(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first);
+CAFFE2_API std::tuple<Tensor,Tensor> quantized_gru(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional);
 CAFFE2_API std::tuple<Tensor,Tensor> quantized_lstm_cell(const Tensor & input, TensorList hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
 CAFFE2_API Tensor quantized_gru_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
 CAFFE2_API Tensor quantized_rnn_relu_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
@@ -882,7 +926,7 @@ CAFFE2_API Tensor quantized_rnn_tanh_cell(const Tensor & input, const Tensor & h
 CAFFE2_API std::tuple<Tensor,Tensor> _pack_padded_sequence(const Tensor & input, const Tensor & lengths, bool batch_first);
 CAFFE2_API Tensor _pack_padded_sequence_backward(const Tensor & grad, IntArrayRef input_size, const Tensor & batch_sizes, bool batch_first);
 CAFFE2_API std::tuple<Tensor,Tensor> _pad_packed_sequence(const Tensor & data, const Tensor & batch_sizes, bool batch_first, Scalar padding_value, int64_t total_length);
-CAFFE2_API Tensor & set_storage_cpu(Tensor & self, Storage source, int64_t storage_offset, IntArrayRef size, IntArrayRef stride={});
+CAFFE2_API Tensor & set_storage(Tensor & self, Storage source, int64_t storage_offset, IntArrayRef size, IntArrayRef stride={});
 CAFFE2_API Tensor & set_quantizer_(Tensor & self, ConstQuantizerPtr quantizer);
 CAFFE2_API Tensor & masked_fill__cpu(Tensor & self, const Tensor & mask, Scalar value);
 CAFFE2_API Tensor & masked_fill__cuda(Tensor & self, const Tensor & mask, Scalar value);
@@ -893,6 +937,7 @@ CAFFE2_API Tensor masked_fill(const Tensor & self, const Tensor & mask, const Te
 CAFFE2_API Tensor & masked_scatter__cpu(Tensor & self, const Tensor & mask, const Tensor & source);
 CAFFE2_API Tensor & masked_scatter__cuda(Tensor & self, const Tensor & mask, const Tensor & source);
 CAFFE2_API Tensor masked_scatter(const Tensor & self, const Tensor & mask, const Tensor & source);
+CAFFE2_API Tensor view(const Tensor & self, IntArrayRef size);
 CAFFE2_API Tensor mkldnn_view(const Tensor & self, IntArrayRef size);
 CAFFE2_API Tensor index_add(const Tensor & self, int64_t dim, const Tensor & index, const Tensor & source);
 CAFFE2_API Tensor index_fill(const Tensor & self, int64_t dim, const Tensor & index, Scalar value);
@@ -929,6 +974,32 @@ CAFFE2_API Tensor tril_indices_cpu(int64_t row, int64_t col, int64_t offset=0, c
 CAFFE2_API Tensor tril_indices_cuda(int64_t row, int64_t col, int64_t offset=0, const TensorOptions & options=at::kLong);
 CAFFE2_API Tensor triu_indices_cpu(int64_t row, int64_t col, int64_t offset=0, const TensorOptions & options=at::kLong);
 CAFFE2_API Tensor triu_indices_cuda(int64_t row, int64_t col, int64_t offset=0, const TensorOptions & options=at::kLong);
+CAFFE2_API Tensor & ne_scalar_out_cpu(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & ne_scalar_out_cuda(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & ne_out_cpu(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & ne_out_cuda(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & eq_scalar_out_cpu(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & eq_scalar_out_cuda(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & eq_out_cpu(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & eq_out_cuda(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & ge_scalar_out_cpu(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & ge_scalar_out_cuda(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & ge_out_cpu(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & ge_out_cuda(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & le_scalar_out_cpu(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & le_scalar_out_cuda(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & le_out_cpu(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & le_out_cuda(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & gt_scalar_out_cpu(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & gt_scalar_out_cuda(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & gt_out_cpu(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & gt_out_cuda(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & lt_scalar_out_cpu(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & lt_scalar_out_cuda(Tensor & out, const Tensor & self, Scalar other);
+CAFFE2_API Tensor & lt_out_cpu(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & lt_out_cuda(Tensor & out, const Tensor & self, const Tensor & other);
+CAFFE2_API Tensor & masked_select_out_cpu(Tensor & out, const Tensor & self, const Tensor & mask);
+CAFFE2_API Tensor & masked_select_out_cuda(Tensor & out, const Tensor & self, const Tensor & mask);
 CAFFE2_API Tensor masked_select_cpu(const Tensor & self, const Tensor & mask);
 CAFFE2_API Tensor masked_select_cuda(const Tensor & self, const Tensor & mask);
 CAFFE2_API std::vector<Tensor> nonzero_numpy(const Tensor & self);
@@ -945,6 +1016,10 @@ CAFFE2_API std::tuple<Tensor &,Tensor &> symeig_out(Tensor & e, Tensor & V, cons
 CAFFE2_API std::tuple<Tensor,Tensor> symeig(const Tensor & self, bool eigenvectors=false, bool upper=true);
 CAFFE2_API std::tuple<Tensor,Tensor> _symeig_helper_cpu(const Tensor & self, bool eigenvectors, bool upper);
 CAFFE2_API std::tuple<Tensor,Tensor> _symeig_helper_cuda(const Tensor & self, bool eigenvectors, bool upper);
+CAFFE2_API std::tuple<Tensor &,Tensor &,Tensor &> svd_out(Tensor & U, Tensor & S, Tensor & V, const Tensor & self, bool some=true, bool compute_uv=true);
+CAFFE2_API std::tuple<Tensor,Tensor,Tensor> svd(const Tensor & self, bool some=true, bool compute_uv=true);
+CAFFE2_API std::tuple<Tensor,Tensor,Tensor> _svd_helper_cpu(const Tensor & self, bool some, bool compute_uv);
+CAFFE2_API std::tuple<Tensor,Tensor,Tensor> _svd_helper_cuda(const Tensor & self, bool some, bool compute_uv);
 CAFFE2_API Tensor & cholesky_out(Tensor & out, const Tensor & self, bool upper=false);
 CAFFE2_API Tensor cholesky(const Tensor & self, bool upper=false);
 CAFFE2_API Tensor _cholesky_helper_cpu(const Tensor & self, bool upper);
@@ -963,6 +1038,10 @@ CAFFE2_API std::tuple<Tensor,Tensor> _qr_helper_cpu(const Tensor & self, bool so
 CAFFE2_API std::tuple<Tensor,Tensor> _qr_helper_cuda(const Tensor & self, bool some);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor> _lu_with_info_cpu(const Tensor & self, bool pivot=true, bool check_errors=true);
 CAFFE2_API std::tuple<Tensor,Tensor,Tensor> _lu_with_info_cuda(const Tensor & self, bool pivot=true, bool check_errors=true);
+CAFFE2_API Tensor & lu_solve_out(Tensor & out, const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
+CAFFE2_API Tensor lu_solve(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
+CAFFE2_API Tensor _lu_solve_helper_cpu(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
+CAFFE2_API Tensor _lu_solve_helper_cuda(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
 CAFFE2_API Tensor & lerp_cpu_scalar_out(Tensor & out, const Tensor & self, const Tensor & end, Scalar weight);
 CAFFE2_API Tensor & lerp_cuda_scalar_out(Tensor & out, const Tensor & self, const Tensor & end, Scalar weight);
 CAFFE2_API Tensor & lerp_cpu_tensor_out(Tensor & out, const Tensor & self, const Tensor & end, const Tensor & weight);
@@ -979,6 +1058,8 @@ CAFFE2_API Tensor median_cpu(const Tensor & self);
 CAFFE2_API Tensor median_cuda(const Tensor & self);
 CAFFE2_API std::tuple<Tensor,Tensor> sort_quant(const Tensor & self, int64_t dim=-1, bool descending=false);
 CAFFE2_API Tensor argsort(const Tensor & self, int64_t dim=-1, bool descending=false);
+CAFFE2_API std::tuple<Tensor &,Tensor &> topk_out_cpu(Tensor & values, Tensor & indices, const Tensor & self, int64_t k, int64_t dim=-1, bool largest=true, bool sorted=true);
+CAFFE2_API std::tuple<Tensor,Tensor> topk(const Tensor & self, int64_t k, int64_t dim=-1, bool largest=true, bool sorted=true);
 CAFFE2_API Tensor all(const Tensor & self);
 CAFFE2_API Tensor any(const Tensor & self);
 CAFFE2_API Tensor & normal_out_cuda(Tensor & out, const Tensor & mean, double std=1, Generator * generator=nullptr);
@@ -987,6 +1068,9 @@ CAFFE2_API Tensor & normal_out_cuda(Tensor & out, double mean, const Tensor & st
 CAFFE2_API Tensor normal_cuda(double mean, const Tensor & std, Generator * generator=nullptr);
 CAFFE2_API Tensor & normal_out_cuda(Tensor & out, const Tensor & mean, const Tensor & std, Generator * generator=nullptr);
 CAFFE2_API Tensor normal_cuda(const Tensor & mean, const Tensor & std, Generator * generator=nullptr);
+CAFFE2_API Tensor normal(double mean, double std, IntArrayRef size, Generator * generator=nullptr, const TensorOptions & options={});
+CAFFE2_API Tensor & normal_out(Tensor & out, double mean, double std, IntArrayRef size, Generator * generator=nullptr);
+CAFFE2_API Tensor alias(const Tensor & self);
 CAFFE2_API Tensor & multilabel_margin_loss_out(Tensor & out, const Tensor & self, const Tensor & target, int64_t reduction=Reduction::Mean);
 CAFFE2_API Tensor multilabel_margin_loss(const Tensor & self, const Tensor & target, int64_t reduction=Reduction::Mean);
 CAFFE2_API Tensor & nll_loss_out(Tensor & out, const Tensor & self, const Tensor & target, const Tensor & weight={}, int64_t reduction=Reduction::Mean, int64_t ignore_index=-100);
@@ -998,10 +1082,12 @@ CAFFE2_API Tensor log_sigmoid(const Tensor & self);
 CAFFE2_API Tensor & adaptive_avg_pool2d_out_cpu(Tensor & out, const Tensor & self, IntArrayRef output_size);
 CAFFE2_API Tensor & adaptive_avg_pool2d_out_cuda(Tensor & out, const Tensor & self, IntArrayRef output_size);
 CAFFE2_API Tensor & mkldnn_adaptive_avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef output_size);
+CAFFE2_API Tensor & quantized_adaptive_avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef output_size);
 CAFFE2_API Tensor adaptive_avg_pool2d(const Tensor & self, IntArrayRef output_size);
 CAFFE2_API Tensor mkldnn_adaptive_avg_pool2d(const Tensor & self, IntArrayRef output_size);
 CAFFE2_API Tensor adaptive_avg_pool2d_cpu(const Tensor & self, IntArrayRef output_size);
 CAFFE2_API Tensor adaptive_avg_pool2d_cuda(const Tensor & self, IntArrayRef output_size);
+CAFFE2_API Tensor quantized_adaptive_avg_pool2d(const Tensor & self, IntArrayRef output_size);
 CAFFE2_API Tensor adaptive_avg_pool2d_backward_cpu(const Tensor & grad_output, const Tensor & self);
 CAFFE2_API Tensor adaptive_avg_pool2d_backward_cuda(const Tensor & grad_output, const Tensor & self);
 CAFFE2_API Tensor & adaptive_avg_pool3d_out_cpu(Tensor & out, const Tensor & self, IntArrayRef output_size);
@@ -1028,24 +1114,24 @@ CAFFE2_API Tensor & adaptive_max_pool3d_backward_out_cpu(Tensor & grad_input, co
 CAFFE2_API Tensor & adaptive_max_pool3d_backward_out_cuda(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & indices);
 CAFFE2_API Tensor adaptive_max_pool3d_backward_cpu(const Tensor & grad_output, const Tensor & self, const Tensor & indices);
 CAFFE2_API Tensor adaptive_max_pool3d_backward_cuda(const Tensor & grad_output, const Tensor & self, const Tensor & indices);
-CAFFE2_API Tensor & avg_pool2d_out_cpu(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor & avg_pool2d_out_cuda(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor & mkldnn_avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor avg_pool2d_cpu(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor avg_pool2d_cuda(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor mkldnn_avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor & avg_pool2d_backward_out_cpu(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-CAFFE2_API Tensor & avg_pool2d_backward_out_cuda(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-CAFFE2_API Tensor avg_pool2d_backward_cpu(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-CAFFE2_API Tensor avg_pool2d_backward_cuda(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-CAFFE2_API Tensor & avg_pool3d_out_cpu(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor & avg_pool3d_out_cuda(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor avg_pool3d_cpu(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor avg_pool3d_cuda(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-CAFFE2_API Tensor & avg_pool3d_backward_out_cpu(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-CAFFE2_API Tensor & avg_pool3d_backward_out_cuda(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-CAFFE2_API Tensor avg_pool3d_backward_cpu(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-CAFFE2_API Tensor avg_pool3d_backward_cuda(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
+CAFFE2_API Tensor & avg_pool2d_out_cpu(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor & avg_pool2d_out_cuda(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor & mkldnn_avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor avg_pool2d_cpu(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor avg_pool2d_cuda(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor mkldnn_avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor & avg_pool2d_backward_out_cpu(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+CAFFE2_API Tensor & avg_pool2d_backward_out_cuda(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+CAFFE2_API Tensor avg_pool2d_backward_cpu(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+CAFFE2_API Tensor avg_pool2d_backward_cuda(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+CAFFE2_API Tensor & avg_pool3d_out_cpu(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor & avg_pool3d_out_cuda(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor avg_pool3d_cpu(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor avg_pool3d_cuda(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+CAFFE2_API Tensor & avg_pool3d_backward_out_cpu(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+CAFFE2_API Tensor & avg_pool3d_backward_out_cuda(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+CAFFE2_API Tensor avg_pool3d_backward_cpu(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+CAFFE2_API Tensor avg_pool3d_backward_cuda(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
 CAFFE2_API std::tuple<Tensor &,Tensor &> fractional_max_pool2d_out_cpu(Tensor & output, Tensor & indices, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples);
 CAFFE2_API std::tuple<Tensor &,Tensor &> fractional_max_pool2d_out_cuda(Tensor & output, Tensor & indices, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples);
 CAFFE2_API std::tuple<Tensor,Tensor> fractional_max_pool2d_cpu(const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples);

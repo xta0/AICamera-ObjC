@@ -54,7 +54,7 @@ static_assert(
 
 // Useful build settings that are recorded in the compiled binary
 #define CAFFE2_BUILD_STRINGS { \
-  {"CXX_FLAGS", "-fembed-bitcode -Wno-deprecated -fvisibility-inlines-hidden -Wno-deprecated-declarations -O2 -fPIC -Wno-narrowing -Wall -Wextra -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -Wno-invalid-partial-specialization -Wno-typedef-redefinition -Wno-unknown-warning-option -Wno-unused-private-field -Wno-inconsistent-missing-override -Wno-aligned-allocation-unavailable -Wno-c++14-extensions -Wno-constexpr-not-const -Wno-missing-braces -Qunused-arguments -fcolor-diagnostics -faligned-new -fno-math-errno -fno-trapping-math -Wno-unused-private-field -Wno-missing-braces -Wno-c++14-extensions -Wno-constexpr-not-const"}, \
+  {"CXX_FLAGS", "-fembed-bitcode -Wno-deprecated -fvisibility-inlines-hidden -Wno-deprecated-declarations -DUSE_QNNPACK -O2 -fPIC -Wno-narrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -Wno-invalid-partial-specialization -Wno-typedef-redefinition -Wno-unknown-warning-option -Wno-unused-private-field -Wno-inconsistent-missing-override -Wno-aligned-allocation-unavailable -Wno-c++14-extensions -Wno-constexpr-not-const -Wno-missing-braces -Qunused-arguments -fcolor-diagnostics -faligned-new -fno-math-errno -fno-trapping-math -Wno-unused-private-field -Wno-missing-braces -Wno-c++14-extensions -Wno-constexpr-not-const"}, \
   {"BUILD_TYPE", "Release"}, \
   {"BLAS", "Eigen"}, \
   {"USE_CUDA", "OFF"}, \
@@ -80,5 +80,5 @@ static_assert(
   {"USE_NVTX", ""}, \
   {"USE_TRT", ""}, \
   {"DISABLE_NUMA", "1"},   \
-  {"NAMEDTENSOR_ENABLED", "OFF"},   \
+  {"BUILD_NAMEDTENSOR", "OFF"},   \
 }

@@ -488,6 +488,16 @@ inline Tensor dispatch_bincount(Tensor & self, const Tensor & weights, int64_t m
   AutoNoGIL no_gil;
   return self.bincount(weights, minlength);
 }
+inline Tensor dispatch_bitwise_not(Tensor & self) {
+
+  AutoNoGIL no_gil;
+  return self.bitwise_not();
+}
+inline Tensor dispatch_bitwise_not_(Tensor & self) {
+
+  AutoNoGIL no_gil;
+  return self.bitwise_not_();
+}
 inline Tensor dispatch_bmm(Tensor & self, const Tensor & mat2) {
 
   AutoNoGIL no_gil;
@@ -788,6 +798,11 @@ inline Tensor dispatch_fill_(Tensor & self, Scalar value) {
   AutoNoGIL no_gil;
   return self.fill_(value);
 }
+inline Tensor dispatch_fill_diagonal_(Tensor & self, Scalar fill_value, bool wrap) {
+
+  AutoNoGIL no_gil;
+  return self.fill_diagonal_(fill_value, wrap);
+}
 inline Tensor dispatch_flatten(Tensor & self, int64_t start_dim, int64_t end_dim) {
 
   AutoNoGIL no_gil;
@@ -862,11 +877,6 @@ inline Tensor dispatch_ge_(Tensor & self, Scalar other) {
 
   AutoNoGIL no_gil;
   return self.ge_(other);
-}
-inline std::tuple<Tensor,Tensor> dispatch_gels(Tensor & self, const Tensor & A) {
-
-  AutoNoGIL no_gil;
-  return self.gels(A);
 }
 inline Tensor dispatch_geometric_(Tensor & self, double p, Generator * generator) {
 
@@ -1018,6 +1028,11 @@ inline bool dispatch_is_nonzero(Tensor & self) {
   AutoNoGIL no_gil;
   return self.is_nonzero();
 }
+inline bool dispatch_is_pinned(Tensor & self) {
+
+  AutoNoGIL no_gil;
+  return self.is_pinned();
+}
 inline bool dispatch_is_same_size(Tensor & self, const Tensor & other) {
 
   AutoNoGIL no_gil;
@@ -1152,6 +1167,11 @@ inline Tensor dispatch_logsumexp(Tensor & self, IntArrayRef dim, bool keepdim) {
 
   AutoNoGIL no_gil;
   return self.logsumexp(dim, keepdim);
+}
+inline std::tuple<Tensor,Tensor> dispatch_lstsq(Tensor & self, const Tensor & A) {
+
+  AutoNoGIL no_gil;
+  return self.lstsq(A);
 }
 inline Tensor dispatch_lt(Tensor & self, const Tensor & other) {
 
@@ -1452,11 +1472,6 @@ inline Tensor dispatch_prod(Tensor & self, int64_t dim, bool keepdim, c10::optio
 
   AutoNoGIL no_gil;
   return self.prod(dim, keepdim, dtype);
-}
-inline std::tuple<Tensor,Tensor> dispatch_pstrf(Tensor & self, bool upper, Scalar tol) {
-
-  AutoNoGIL no_gil;
-  return self.pstrf(upper, tol);
 }
 inline Tensor dispatch_put_(Tensor & self, const Tensor & index, const Tensor & source, bool accumulate) {
 

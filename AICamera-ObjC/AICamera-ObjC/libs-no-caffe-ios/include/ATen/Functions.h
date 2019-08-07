@@ -105,6 +105,8 @@ static inline Tensor bilinear(const Tensor & input1, const Tensor & input2, cons
 static inline Tensor binary_cross_entropy_with_logits(const Tensor & self, const Tensor & target, const Tensor & weight={}, const Tensor & pos_weight={}, int64_t reduction=Reduction::Mean);
 static inline Tensor binary_cross_entropy_with_logits_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight={}, const Tensor & pos_weight={}, int64_t reduction=Reduction::Mean);
 static inline Tensor bincount(const Tensor & self, const Tensor & weights={}, int64_t minlength=0);
+static inline Tensor bitwise_not(const Tensor & self);
+static inline Tensor & bitwise_not_out(Tensor & out, const Tensor & self);
 static inline Tensor blackman_window(int64_t window_length, const TensorOptions & options={});
 static inline Tensor blackman_window(int64_t window_length, bool periodic, const TensorOptions & options={});
 static inline Tensor bmm(const Tensor & self, const Tensor & mat2);
@@ -193,7 +195,7 @@ static inline Tensor _embedding_bag_backward(const Tensor & grad, const Tensor &
 static inline Tensor _embedding_bag_sparse_backward(const Tensor & grad, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, const Tensor & bag_size, int64_t num_weights, bool scale_grad_by_freq, int64_t mode, const Tensor & per_sample_weights);
 static inline Tensor _embedding_bag_dense_backward(const Tensor & grad, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, const Tensor & bag_size, const Tensor & maximum_indices, int64_t num_weights, bool scale_grad_by_freq, int64_t mode, const Tensor & per_sample_weights);
 static inline Tensor _embedding_bag_per_sample_weights_backward(const Tensor & grad, const Tensor & weight, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, int64_t mode);
-#ifdef NAMEDTENSOR_ENABLED
+#ifdef BUILD_NAMEDTENSOR
 static inline Tensor empty(IntArrayRef size, c10::optional<DimnameList> names, const TensorOptions & options={});
 #endif
 static inline Tensor empty(IntArrayRef size, const TensorOptions & options={}, c10::optional<MemoryFormat> memory_format=c10::nullopt);
@@ -285,6 +287,8 @@ static inline Tensor linear(const Tensor & input, const Tensor & weight, const T
 static inline Tensor mkldnn_linear(const Tensor & input, const Tensor & weight, const Tensor & bias={});
 static inline Tensor fbgemm_linear_int8_weight(const Tensor & input, const Tensor & weight, const Tensor & packed, const Tensor & col_offsets, Scalar weight_scale, Scalar weight_zero_point, const Tensor & bias);
 static inline std::tuple<Tensor,Tensor,double,int64_t> fbgemm_linear_quantize_weight(const Tensor & input);
+static inline Tensor fbgemm_pack_gemm_matrix_fp16(const Tensor & input);
+static inline Tensor fbgemm_linear_fp16_weight(const Tensor & input, const Tensor & packed_weight, const Tensor & bias);
 static inline Tensor fbgemm_pack_quantized_matrix(const Tensor & input, int64_t K, int64_t N);
 static inline bool fbgemm_is_cpu_supported();
 static inline Tensor linspace(Scalar start, Scalar end, int64_t steps=100, const TensorOptions & options={});
@@ -322,6 +326,7 @@ static inline std::tuple<Tensor,Tensor> max_pool1d_with_indices(const Tensor & s
 static inline Tensor max_pool1d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
 static inline Tensor max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
 static inline Tensor mkldnn_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
+static inline Tensor quantized_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1);
 static inline Tensor max_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, IntArrayRef dilation=1, bool ceil_mode=false);
 static inline Tensor mean(const Tensor & self, c10::optional<ScalarType> dtype=c10::nullopt);
 static inline Tensor mean(const Tensor & self, IntArrayRef dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
@@ -350,6 +355,8 @@ static inline Tensor miopen_depthwise_convolution(const Tensor & self, const Ten
 static inline Tensor miopen_depthwise_convolution_backward_input(IntArrayRef self_size, const Tensor & grad_output, const Tensor & weight, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic);
 static inline std::tuple<Tensor,Tensor,Tensor> miopen_depthwise_convolution_backward(const Tensor & self, const Tensor & grad_output, const Tensor & weight, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, std::array<bool,3> output_mask);
 static inline Tensor miopen_depthwise_convolution_backward_weight(IntArrayRef weight_size, const Tensor & grad_output, const Tensor & self, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic);
+static inline std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> miopen_rnn(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & hx, const Tensor & cx, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state);
+static inline std::tuple<Tensor,Tensor,Tensor,std::vector<Tensor>> miopen_rnn_backward(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & weight_buf, const Tensor & hx, const Tensor & cx, const Tensor & output, const Tensor & grad_output, const Tensor & grad_hy, const Tensor & grad_cy, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state, const Tensor & reserve, std::array<bool,4> output_mask);
 static inline Tensor mm(const Tensor & self, const Tensor & mat2);
 static inline Tensor & mm_out(Tensor & out, const Tensor & self, const Tensor & mat2);
 static inline Tensor _sparse_mm(const Tensor & sparse, const Tensor & dense);
@@ -366,6 +373,7 @@ static inline std::tuple<Tensor,Tensor,Tensor> native_batch_norm(const Tensor & 
 static inline std::tuple<Tensor,Tensor> batch_norm_stats(const Tensor & input, double eps);
 static inline Tensor batch_norm_elemt(const Tensor & input, const Tensor & weight, const Tensor & bias, const Tensor & mean, const Tensor & invstd, double eps);
 static inline std::tuple<Tensor,Tensor> batch_norm_gather_stats(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, int64_t count);
+static inline std::tuple<Tensor,Tensor> batch_norm_gather_stats_with_counts(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, IntArrayRef counts);
 static inline std::tuple<Tensor,Tensor,Tensor> native_batch_norm_backward(const Tensor & grad_out, const Tensor & input, const Tensor & weight, const Tensor & running_mean, const Tensor & running_var, const Tensor & save_mean, const Tensor & save_invstd, bool train, double eps, std::array<bool,3> output_mask);
 static inline std::tuple<Tensor,Tensor,Tensor,Tensor> batch_norm_backward_reduce(const Tensor & grad_out, const Tensor & input, const Tensor & mean, const Tensor & invstd, bool input_g, bool weight_g, bool bias_g);
 static inline Tensor batch_norm_backward_elemt(const Tensor & grad_out, const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & weight, const Tensor & mean_dy, const Tensor & mean_dy_xmu);
@@ -387,7 +395,6 @@ static inline Tensor _pdist_forward(const Tensor & self, double p=2);
 static inline Tensor _pdist_backward(const Tensor & grad, const Tensor & self, double p, const Tensor & pdist);
 static inline Tensor cosine_similarity(const Tensor & x1, const Tensor & x2, int64_t dim=1, double eps=1e-08);
 static inline Tensor pixel_shuffle(const Tensor & self, int64_t upscale_factor);
-static inline Tensor pin_memory(const Tensor & self);
 static inline Tensor pinverse(const Tensor & self, double rcond=1e-15);
 static inline Tensor poisson_nll_loss(const Tensor & input, const Tensor & target, bool log_input, bool full, double eps, int64_t reduction);
 static inline Tensor scalar_tensor(Scalar s, const TensorOptions & options={});
@@ -449,7 +456,7 @@ static inline Tensor hardshrink_backward(const Tensor & grad_out, const Tensor &
 static inline Tensor rsqrt(const Tensor & self);
 static inline Tensor & rsqrt_(Tensor & self);
 static inline Tensor & rsqrt_out(Tensor & out, const Tensor & self);
-#ifdef NAMEDTENSOR_ENABLED
+#ifdef BUILD_NAMEDTENSOR
 static inline Tensor select(const Tensor & self, Dimname dim, int64_t index);
 #endif
 static inline Tensor select(const Tensor & self, int64_t dim, int64_t index);
@@ -469,6 +476,9 @@ static inline Tensor & sinh_out(Tensor & out, const Tensor & self);
 static inline Tensor detach(const Tensor & self);
 static inline Tensor & detach_(Tensor & self);
 static inline int64_t size(const Tensor & self, int64_t dim);
+#ifdef BUILD_NAMEDTENSOR
+static inline int64_t size(const Tensor & self, Dimname dim);
+#endif
 static inline Tensor slice(const Tensor & self, int64_t dim=0, int64_t start=0, int64_t end=9223372036854775807, int64_t step=1);
 static inline std::tuple<Tensor,Tensor> slogdet(const Tensor & self);
 static inline Tensor smm(const Tensor & self, const Tensor & mat2);
@@ -492,9 +502,18 @@ static inline Tensor stack(TensorList tensors, int64_t dim=0);
 static inline Tensor & stack_out(Tensor & out, TensorList tensors, int64_t dim=0);
 static inline Tensor stft(const Tensor & self, int64_t n_fft, c10::optional<int64_t> hop_length=c10::nullopt, c10::optional<int64_t> win_length=c10::nullopt, const Tensor & window={}, bool normalized=false, bool onesided=true);
 static inline int64_t stride(const Tensor & self, int64_t dim);
+#ifdef BUILD_NAMEDTENSOR
+static inline int64_t stride(const Tensor & self, Dimname dim);
+#endif
 static inline Tensor sum(const Tensor & self, c10::optional<ScalarType> dtype=c10::nullopt);
 static inline Tensor sum(const Tensor & self, IntArrayRef dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor sum(const Tensor & self, DimnameList dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
 static inline Tensor & sum_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor & sum_out(Tensor & out, const Tensor & self, DimnameList dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
 static inline Tensor sqrt(const Tensor & self);
 static inline Tensor & sqrt_(Tensor & self);
 static inline Tensor & sqrt_out(Tensor & out, const Tensor & self);
@@ -506,6 +525,12 @@ static inline Tensor & std_out(Tensor & out, const Tensor & self, IntArrayRef di
 static inline Tensor prod(const Tensor & self, c10::optional<ScalarType> dtype=c10::nullopt);
 static inline Tensor prod(const Tensor & self, int64_t dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
 static inline Tensor & prod_out(Tensor & out, const Tensor & self, int64_t dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor prod(const Tensor & self, Dimname dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor & prod_out(Tensor & out, const Tensor & self, Dimname dim, bool keepdim=false, c10::optional<ScalarType> dtype=c10::nullopt);
+#endif
 static inline Tensor t(const Tensor & self);
 static inline Tensor tan(const Tensor & self);
 static inline Tensor & tan_(Tensor & self);
@@ -532,7 +557,7 @@ static inline Tensor triplet_margin_loss(const Tensor & anchor, const Tensor & p
 static inline Tensor trunc(const Tensor & self);
 static inline Tensor & trunc_(Tensor & self);
 static inline Tensor & trunc_out(Tensor & out, const Tensor & self);
-static inline bool _has_same_tensorimpl_type(const Tensor & self, const Tensor & other);
+static inline bool _has_compatible_shallow_copy_type(const Tensor & self, const Tensor & from);
 static inline std::tuple<Tensor,Tensor> _unique(const Tensor & self, bool sorted=true, bool return_inverse=false);
 static inline std::tuple<Tensor,Tensor,Tensor> unique_dim(const Tensor & self, int64_t dim, bool sorted=true, bool return_inverse=false, bool return_counts=false);
 static inline std::tuple<Tensor,Tensor,Tensor> unique_consecutive(const Tensor & self, bool return_inverse=false, bool return_counts=false, c10::optional<int64_t> dim=c10::nullopt);
@@ -546,6 +571,7 @@ static inline Tensor & var_out(Tensor & out, const Tensor & self, IntArrayRef di
 static inline std::tuple<Tensor,Tensor> var_mean(const Tensor & self, bool unbiased=true);
 static inline std::tuple<Tensor,Tensor> var_mean(const Tensor & self, IntArrayRef dim, bool unbiased=true, bool keepdim=false);
 static inline Tensor where(const Tensor & condition, const Tensor & self, const Tensor & other);
+static inline std::vector<Tensor> where(const Tensor & condition);
 static inline Tensor _s_where(const Tensor & condition, const Tensor & self, const Tensor & other);
 static inline Tensor norm_except_dim(const Tensor & v, int64_t pow=2, int64_t dim=0);
 static inline Tensor _weight_norm(const Tensor & v, const Tensor & g, int64_t dim=0);
@@ -618,6 +644,8 @@ static inline double q_scale(const Tensor & self);
 static inline int64_t q_zero_point(const Tensor & self);
 static inline Tensor int_repr(const Tensor & self);
 static inline Tensor _per_tensor_affine_qtensor(const Tensor & self, double scale, int64_t zero_point);
+static inline Tensor fake_quantize_per_tensor_affine(const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max);
+static inline Tensor fake_quantize_per_tensor_affine_backward(const Tensor & grad, const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max);
 static inline std::vector<Tensor> meshgrid(TensorList tensors);
 static inline Tensor cartesian_prod(TensorList tensors);
 static inline Tensor combinations(const Tensor & self, int64_t r=2, bool with_replacement=false);
@@ -638,7 +666,9 @@ static inline std::tuple<Tensor,Tensor> lstm_cell(const Tensor & input, TensorLi
 static inline Tensor gru_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih={}, const Tensor & b_hh={});
 static inline Tensor rnn_tanh_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih={}, const Tensor & b_hh={});
 static inline Tensor rnn_relu_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih={}, const Tensor & b_hh={});
-static inline std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first);
+static inline std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first, c10::optional<ScalarType> dtype=c10::nullopt);
+static inline std::tuple<Tensor,Tensor> quantized_gru(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first);
+static inline std::tuple<Tensor,Tensor> quantized_gru(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional);
 static inline std::tuple<Tensor,Tensor> quantized_lstm_cell(const Tensor & input, TensorList hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
 static inline Tensor quantized_gru_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
 static inline Tensor quantized_rnn_relu_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
@@ -718,8 +748,8 @@ static inline Tensor & addcmul_out(Tensor & out, const Tensor & self, const Tens
 static inline Tensor addcmul(const Tensor & self, const Tensor & tensor1, const Tensor & tensor2, Scalar value=1);
 static inline Tensor & addcdiv_out(Tensor & out, const Tensor & self, const Tensor & tensor1, const Tensor & tensor2, Scalar value=1);
 static inline Tensor addcdiv(const Tensor & self, const Tensor & tensor1, const Tensor & tensor2, Scalar value=1);
-static inline std::tuple<Tensor &,Tensor &> gels_out(Tensor & X, Tensor & qr, const Tensor & self, const Tensor & A);
-static inline std::tuple<Tensor,Tensor> gels(const Tensor & self, const Tensor & A);
+static inline std::tuple<Tensor &,Tensor &> lstsq_out(Tensor & X, Tensor & qr, const Tensor & self, const Tensor & A);
+static inline std::tuple<Tensor,Tensor> lstsq(const Tensor & self, const Tensor & A);
 static inline std::tuple<Tensor &,Tensor &> triangular_solve_out(Tensor & X, Tensor & M, const Tensor & self, const Tensor & A, bool upper=true, bool transpose=false, bool unitriangular=false);
 static inline std::tuple<Tensor,Tensor> triangular_solve(const Tensor & self, const Tensor & A, bool upper=true, bool transpose=false, bool unitriangular=false);
 static inline std::tuple<Tensor,Tensor> _triangular_solve_helper(const Tensor & self, const Tensor & A, bool upper, bool transpose, bool unitriangular);
@@ -730,6 +760,7 @@ static inline std::tuple<Tensor &,Tensor &> eig_out(Tensor & e, Tensor & v, cons
 static inline std::tuple<Tensor,Tensor> eig(const Tensor & self, bool eigenvectors=false);
 static inline std::tuple<Tensor &,Tensor &,Tensor &> svd_out(Tensor & U, Tensor & S, Tensor & V, const Tensor & self, bool some=true, bool compute_uv=true);
 static inline std::tuple<Tensor,Tensor,Tensor> svd(const Tensor & self, bool some=true, bool compute_uv=true);
+static inline std::tuple<Tensor,Tensor,Tensor> _svd_helper(const Tensor & self, bool some, bool compute_uv);
 static inline Tensor & cholesky_out(Tensor & out, const Tensor & self, bool upper=false);
 static inline Tensor cholesky(const Tensor & self, bool upper=false);
 static inline Tensor _cholesky_helper(const Tensor & self, bool upper);
@@ -741,8 +772,6 @@ static inline std::tuple<Tensor &,Tensor &> solve_out(Tensor & solution, Tensor 
 static inline std::tuple<Tensor,Tensor> _solve_helper(const Tensor & self, const Tensor & A);
 static inline Tensor & cholesky_inverse_out(Tensor & out, const Tensor & self, bool upper=false);
 static inline Tensor cholesky_inverse(const Tensor & self, bool upper=false);
-static inline std::tuple<Tensor &,Tensor &> pstrf_out(Tensor & u, Tensor & pivot, const Tensor & self, bool upper=true, Scalar tol=-1);
-static inline std::tuple<Tensor,Tensor> pstrf(const Tensor & self, bool upper=true, Scalar tol=-1);
 static inline std::tuple<Tensor &,Tensor &> qr_out(Tensor & Q, Tensor & R, const Tensor & self, bool some=true);
 static inline std::tuple<Tensor,Tensor> qr(const Tensor & self, bool some=true);
 static inline std::tuple<Tensor,Tensor> _qr_helper(const Tensor & self, bool some);
@@ -755,6 +784,7 @@ static inline Tensor ormqr(const Tensor & self, const Tensor & input2, const Ten
 static inline std::tuple<Tensor,Tensor,Tensor> _lu_with_info(const Tensor & self, bool pivot=true, bool check_errors=true);
 static inline Tensor & lu_solve_out(Tensor & out, const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
 static inline Tensor lu_solve(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
+static inline Tensor _lu_solve_helper(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
 static inline Tensor & multinomial_out(Tensor & out, const Tensor & self, int64_t num_samples, bool replacement=false, Generator * generator=nullptr);
 static inline Tensor multinomial(const Tensor & self, int64_t num_samples, bool replacement=false, Generator * generator=nullptr);
 static inline std::tuple<Tensor,Tensor> _multinomial_alias_setup(const Tensor & probs);
@@ -813,6 +843,8 @@ static inline Tensor & normal_out(Tensor & out, double mean, const Tensor & std,
 static inline Tensor normal(double mean, const Tensor & std, Generator * generator=nullptr);
 static inline Tensor & normal_out(Tensor & out, const Tensor & mean, const Tensor & std, Generator * generator=nullptr);
 static inline Tensor normal(const Tensor & mean, const Tensor & std, Generator * generator=nullptr);
+static inline Tensor normal(double mean, double std, IntArrayRef size, Generator * generator=nullptr, const TensorOptions & options={});
+static inline Tensor & normal_out(Tensor & out, double mean, double std, IntArrayRef size, Generator * generator=nullptr);
 static inline Tensor alias(const Tensor & self);
 static inline Tensor _addr(const Tensor & self, const Tensor & vec1, const Tensor & vec2, Scalar beta=1, Scalar alpha=1);
 static inline Tensor & _addr_(Tensor & self, const Tensor & vec1, const Tensor & vec2, Scalar beta=1, Scalar alpha=1);
@@ -932,14 +964,14 @@ static inline std::tuple<Tensor &,Tensor &> adaptive_max_pool3d_out(Tensor & out
 static inline std::tuple<Tensor,Tensor> adaptive_max_pool3d(const Tensor & self, IntArrayRef output_size);
 static inline Tensor & adaptive_max_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & indices);
 static inline Tensor adaptive_max_pool3d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & indices);
-static inline Tensor & avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-static inline Tensor avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-static inline Tensor & avg_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-static inline Tensor avg_pool2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-static inline Tensor & avg_pool3d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-static inline Tensor avg_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true);
-static inline Tensor & avg_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
-static inline Tensor avg_pool3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad);
+static inline Tensor & avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+static inline Tensor avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+static inline Tensor & avg_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+static inline Tensor avg_pool2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+static inline Tensor & avg_pool3d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+static inline Tensor avg_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride={}, IntArrayRef padding=0, bool ceil_mode=false, bool count_include_pad=true, c10::optional<int64_t> divisor_override=c10::nullopt);
+static inline Tensor & avg_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
+static inline Tensor avg_pool3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override);
 static inline std::tuple<Tensor &,Tensor &> fractional_max_pool2d_out(Tensor & output, Tensor & indices, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples);
 static inline std::tuple<Tensor,Tensor> fractional_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples);
 static inline Tensor & fractional_max_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & indices);
@@ -1257,7 +1289,7 @@ static inline Tensor & abs_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & abs_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::abs(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::abs.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor acos(const Tensor & self) {
@@ -1269,7 +1301,7 @@ static inline Tensor & acos_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & acos_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::acos(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::acos.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor avg_pool1d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
@@ -1285,15 +1317,15 @@ static inline std::tuple<Tensor,Tensor> adaptive_max_pool1d(const Tensor & self,
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size);
 }
 static inline Tensor add(const Tensor & self, const Tensor & other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::add(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::add.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, alpha);
 }
 static inline Tensor & add_out(Tensor & out, const Tensor & self, const Tensor & other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::add(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::add.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other, alpha);
 }
 static inline Tensor add(const Tensor & self, Scalar other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::add(Tensor self, Scalar other, Scalar alpha=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::add.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, alpha);
 }
 static inline Tensor addmv(const Tensor & self, const Tensor & mat, const Tensor & vec, Scalar beta, Scalar alpha) {
@@ -1305,7 +1337,7 @@ static inline Tensor & addmv_(Tensor & self, const Tensor & mat, const Tensor & 
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, mat, vec, beta, alpha);
 }
 static inline Tensor & addmv_out(Tensor & out, const Tensor & self, const Tensor & mat, const Tensor & vec, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::addmv(Tensor self, Tensor mat, Tensor vec, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::addmv.out(Tensor self, Tensor mat, Tensor vec, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mat, vec, beta, alpha);
 }
 static inline Tensor addr(const Tensor & self, const Tensor & vec1, const Tensor & vec2, Scalar beta, Scalar alpha) {
@@ -1313,7 +1345,7 @@ static inline Tensor addr(const Tensor & self, const Tensor & vec1, const Tensor
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, vec1, vec2, beta, alpha);
 }
 static inline Tensor & addr_out(Tensor & out, const Tensor & self, const Tensor & vec1, const Tensor & vec2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::addr(Tensor self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::addr.out(Tensor self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, vec1, vec2, beta, alpha);
 }
 static inline Tensor affine_grid_generator(const Tensor & theta, IntArrayRef size) {
@@ -1325,11 +1357,11 @@ static inline Tensor affine_grid_generator_backward(const Tensor & grad, IntArra
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(grad), at::detail::infer_is_variable(grad))(grad, size);
 }
 static inline Tensor all(const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::all(Tensor self, int dim, bool keepdim=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::all.dim(Tensor self, int dim, bool keepdim=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline Tensor & all_out(Tensor & out, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::all(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::all.out(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim);
 }
 static inline bool allclose(const Tensor & self, const Tensor & other, double rtol, double atol, bool equal_nan) {
@@ -1337,11 +1369,11 @@ static inline bool allclose(const Tensor & self, const Tensor & other, double rt
     return table->getOp<bool (const Tensor &, const Tensor &, double, double, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, rtol, atol, equal_nan);
 }
 static inline Tensor any(const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::any(Tensor self, int dim, bool keepdim=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::any.dim(Tensor self, int dim, bool keepdim=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline Tensor & any_out(Tensor & out, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::any(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::any.out(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim);
 }
 static inline Tensor arange(Scalar end, const TensorOptions & options) {
@@ -1351,20 +1383,20 @@ static inline Tensor arange(Scalar end, const TensorOptions & options) {
 }
 static inline Tensor arange(Scalar start, Scalar end, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::arange(Scalar start, Scalar end, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::arange.start(Scalar start, Scalar end, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (Scalar, Scalar, const TensorOptions &)>(options.backend(), options.is_variable())(start, end, options);
 }
 static inline Tensor arange(Scalar start, Scalar end, Scalar step, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::arange(Scalar start, Scalar end, Scalar step, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::arange.start_step(Scalar start, Scalar end, Scalar step, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (Scalar, Scalar, Scalar, const TensorOptions &)>(options.backend(), options.is_variable())(start, end, step, options);
 }
 static inline Tensor & arange_out(Tensor & out, Scalar end) {
-    static auto table = globalATenDispatch().getOpTable("aten::arange(Scalar end, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::arange.out(Scalar end, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, Scalar)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, end);
 }
 static inline Tensor & arange_out(Tensor & out, Scalar start, Scalar end, Scalar step) {
-    static auto table = globalATenDispatch().getOpTable("aten::arange(Scalar start, Scalar end, Scalar step=1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::arange.start_out(Scalar start, Scalar end, Scalar step=1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, Scalar, Scalar, Scalar)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, start, end, step);
 }
 static inline Tensor _dim_arange(const Tensor & like, int64_t dim) {
@@ -1396,7 +1428,7 @@ static inline Tensor & asin_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & asin_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::asin(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::asin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor atan(const Tensor & self) {
@@ -1408,7 +1440,7 @@ static inline Tensor & atan_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & atan_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::atan(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::atan.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor baddbmm(const Tensor & self, const Tensor & batch1, const Tensor & batch2, Scalar beta, Scalar alpha) {
@@ -1420,7 +1452,7 @@ static inline Tensor & _baddbmm_mkl_(Tensor & self, const Tensor & batch1, const
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, batch1, batch2, beta, alpha);
 }
 static inline Tensor & baddbmm_out(Tensor & out, const Tensor & self, const Tensor & batch1, const Tensor & batch2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::baddbmm(Tensor self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::baddbmm.out(Tensor self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, batch1, batch2, beta, alpha);
 }
 static inline Tensor bartlett_window(int64_t window_length, const TensorOptions & options) {
@@ -1430,7 +1462,7 @@ static inline Tensor bartlett_window(int64_t window_length, const TensorOptions 
 }
 static inline Tensor bartlett_window(int64_t window_length, bool periodic, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::bartlett_window(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::bartlett_window.periodic(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, bool, const TensorOptions &)>(options.backend(), options.is_variable())(window_length, periodic, options);
 }
 static inline Tensor batch_norm(const Tensor & input, const Tensor & weight, const Tensor & bias, const Tensor & running_mean, const Tensor & running_var, bool training, double momentum, double eps, bool cudnn_enabled) {
@@ -1450,11 +1482,11 @@ static inline Tensor bernoulli(const Tensor & self, Generator * generator) {
     return table->getOp<Tensor (const Tensor &, Generator *)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, generator);
 }
 static inline Tensor & bernoulli_out(Tensor & out, const Tensor & self, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::bernoulli(Tensor self, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::bernoulli.out(Tensor self, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Generator *)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, generator);
 }
 static inline Tensor bernoulli(const Tensor & self, double p, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::bernoulli(Tensor self, float p, *, Generator? generator=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::bernoulli.p(Tensor self, float p, *, Generator? generator=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, double, Generator *)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, p, generator);
 }
 static inline Tensor bilinear(const Tensor & input1, const Tensor & input2, const Tensor & weight, const Tensor & bias) {
@@ -1473,6 +1505,14 @@ static inline Tensor bincount(const Tensor & self, const Tensor & weights, int64
     static auto table = globalATenDispatch().getOpTable("aten::bincount(Tensor self, Tensor? weights=None, int minlength=0) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weights, minlength);
 }
+static inline Tensor bitwise_not(const Tensor & self) {
+    static auto table = globalATenDispatch().getOpTable("aten::bitwise_not(Tensor self) -> Tensor");
+    return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
+}
+static inline Tensor & bitwise_not_out(Tensor & out, const Tensor & self) {
+    static auto table = globalATenDispatch().getOpTable("aten::bitwise_not.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
+}
 static inline Tensor blackman_window(int64_t window_length, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
     static auto table = globalATenDispatch().getOpTable("aten::blackman_window(int window_length, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
@@ -1480,7 +1520,7 @@ static inline Tensor blackman_window(int64_t window_length, const TensorOptions 
 }
 static inline Tensor blackman_window(int64_t window_length, bool periodic, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::blackman_window(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::blackman_window.periodic(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, bool, const TensorOptions &)>(options.backend(), options.is_variable())(window_length, periodic, options);
 }
 static inline Tensor bmm(const Tensor & self, const Tensor & mat2) {
@@ -1488,7 +1528,7 @@ static inline Tensor bmm(const Tensor & self, const Tensor & mat2) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, mat2);
 }
 static inline Tensor & bmm_out(Tensor & out, const Tensor & self, const Tensor & mat2) {
-    static auto table = globalATenDispatch().getOpTable("aten::bmm(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::bmm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mat2);
 }
 static inline std::vector<Tensor> broadcast_tensors(TensorList tensors) {
@@ -1500,7 +1540,7 @@ static inline Tensor cat(TensorList tensors, int64_t dim) {
     return table->getOp<Tensor (TensorList, int64_t)>(at::detail::infer_backend(tensors), at::detail::infer_is_variable(tensors))(tensors, dim);
 }
 static inline Tensor & cat_out(Tensor & out, TensorList tensors, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::cat(Tensor[] tensors, int dim=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cat.out(Tensor[] tensors, int dim=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, TensorList, int64_t)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, tensors, dim);
 }
 static inline Tensor ceil(const Tensor & self) {
@@ -1512,7 +1552,7 @@ static inline Tensor & ceil_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & ceil_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::ceil(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ceil.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor chain_matmul(TensorList matrices) {
@@ -1532,7 +1572,7 @@ static inline Tensor & clamp_(Tensor & self, c10::optional<Scalar> min, c10::opt
     return table->getOp<Tensor & (Tensor &, c10::optional<Scalar>, c10::optional<Scalar>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, min, max);
 }
 static inline Tensor & clamp_out(Tensor & out, const Tensor & self, c10::optional<Scalar> min, c10::optional<Scalar> max) {
-    static auto table = globalATenDispatch().getOpTable("aten::clamp(Tensor self, Scalar? min=None, Scalar? max=None, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::clamp.out(Tensor self, Scalar? min=None, Scalar? max=None, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, c10::optional<Scalar>, c10::optional<Scalar>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, min, max);
 }
 static inline Tensor clamp_max(const Tensor & self, Scalar max) {
@@ -1544,7 +1584,7 @@ static inline Tensor & clamp_max_(Tensor & self, Scalar max) {
     return table->getOp<Tensor & (Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, max);
 }
 static inline Tensor & clamp_max_out(Tensor & out, const Tensor & self, Scalar max) {
-    static auto table = globalATenDispatch().getOpTable("aten::clamp_max(Tensor self, Scalar max, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::clamp_max.out(Tensor self, Scalar max, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, max);
 }
 static inline Tensor clamp_min(const Tensor & self, Scalar min) {
@@ -1556,7 +1596,7 @@ static inline Tensor & clamp_min_(Tensor & self, Scalar min) {
     return table->getOp<Tensor & (Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, min);
 }
 static inline Tensor & clamp_min_out(Tensor & out, const Tensor & self, Scalar min) {
-    static auto table = globalATenDispatch().getOpTable("aten::clamp_min(Tensor self, Scalar min, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::clamp_min.out(Tensor self, Scalar min, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, min);
 }
 static inline bool cudnn_is_acceptable(const Tensor & self) {
@@ -1608,11 +1648,11 @@ static inline Tensor conv_transpose1d(const Tensor & input, const Tensor & weigh
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, int64_t, IntArrayRef)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, weight, bias, stride, padding, output_padding, groups, dilation);
 }
 static inline Tensor conv_transpose2d(const Tensor & input, const Tensor & weight, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, int64_t groups, IntArrayRef dilation) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d(Tensor input, Tensor weight, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] output_padding=0, int groups=1, int[2] dilation=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d.input(Tensor input, Tensor weight, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] output_padding=0, int groups=1, int[2] dilation=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, int64_t, IntArrayRef)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, weight, bias, stride, padding, output_padding, groups, dilation);
 }
 static inline Tensor conv_transpose3d(const Tensor & input, const Tensor & weight, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, int64_t groups, IntArrayRef dilation) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d(Tensor input, Tensor weight, Tensor? bias=None, int[3] stride=1, int[3] padding=0, int[3] output_padding=0, int groups=1, int[3] dilation=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d.input(Tensor input, Tensor weight, Tensor? bias=None, int[3] stride=1, int[3] padding=0, int[3] output_padding=0, int groups=1, int[3] dilation=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, int64_t, IntArrayRef)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, weight, bias, stride, padding, output_padding, groups, dilation);
 }
 static inline Tensor _copy_from(const Tensor & self, const Tensor & dst, bool non_blocking) {
@@ -1628,7 +1668,7 @@ static inline Tensor & cos_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & cos_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::cos(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cos.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor cosh(const Tensor & self) {
@@ -1640,7 +1680,7 @@ static inline Tensor & cosh_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & cosh_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::cosh(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cosh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor cosine_embedding_loss(const Tensor & input1, const Tensor & input2, const Tensor & target, double margin, int64_t reduction) {
@@ -1716,7 +1756,7 @@ static inline Tensor cumsum(const Tensor & self, int64_t dim, c10::optional<Scal
     return table->getOp<Tensor (const Tensor &, int64_t, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, dtype);
 }
 static inline Tensor & cumsum_out(Tensor & out, const Tensor & self, int64_t dim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::cumsum(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cumsum.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, dtype);
 }
 static inline Tensor cumprod(const Tensor & self, int64_t dim, c10::optional<ScalarType> dtype) {
@@ -1724,15 +1764,15 @@ static inline Tensor cumprod(const Tensor & self, int64_t dim, c10::optional<Sca
     return table->getOp<Tensor (const Tensor &, int64_t, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, dtype);
 }
 static inline Tensor & cumprod_out(Tensor & out, const Tensor & self, int64_t dim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::cumprod(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cumprod.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, dtype);
 }
 static inline Tensor ctc_loss(const Tensor & log_probs, const Tensor & targets, IntArrayRef input_lengths, IntArrayRef target_lengths, int64_t blank, int64_t reduction, bool zero_infinity) {
-    static auto table = globalATenDispatch().getOpTable("aten::ctc_loss(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::ctc_loss.IntList(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, int64_t, int64_t, bool)>(at::detail::infer_backend(log_probs), at::detail::infer_is_variable(log_probs))(log_probs, targets, input_lengths, target_lengths, blank, reduction, zero_infinity);
 }
 static inline Tensor ctc_loss(const Tensor & log_probs, const Tensor & targets, const Tensor & input_lengths, const Tensor & target_lengths, int64_t blank, int64_t reduction, bool zero_infinity) {
-    static auto table = globalATenDispatch().getOpTable("aten::ctc_loss(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::ctc_loss.Tensor(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t, bool)>(at::detail::infer_backend(log_probs), at::detail::infer_is_variable(log_probs))(log_probs, targets, input_lengths, target_lengths, blank, reduction, zero_infinity);
 }
 static inline std::tuple<Tensor,Tensor> _ctc_loss(const Tensor & log_probs, const Tensor & targets, IntArrayRef input_lengths, IntArrayRef target_lengths, int64_t blank, bool zero_infinity) {
@@ -1760,15 +1800,15 @@ static inline Tensor diagonal(const Tensor & self, int64_t offset, int64_t dim1,
     return table->getOp<Tensor (const Tensor &, int64_t, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, offset, dim1, dim2);
 }
 static inline Tensor div(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::div(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::div.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & div_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::div(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::div.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor div(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::div(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::div.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor dot(const Tensor & self, const Tensor & tensor) {
@@ -1776,7 +1816,7 @@ static inline Tensor dot(const Tensor & self, const Tensor & tensor) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, tensor);
 }
 static inline Tensor & dot_out(Tensor & out, const Tensor & self, const Tensor & tensor) {
-    static auto table = globalATenDispatch().getOpTable("aten::dot(Tensor self, Tensor tensor, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::dot.out(Tensor self, Tensor tensor, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, tensor);
 }
 static inline Tensor einsum(std::string equation, TensorList tensors) {
@@ -1827,16 +1867,16 @@ static inline Tensor _embedding_bag_per_sample_weights_backward(const Tensor & g
     static auto table = globalATenDispatch().getOpTable("aten::_embedding_bag_per_sample_weights_backward(Tensor grad, Tensor weight, Tensor indices, Tensor offsets, Tensor offset2bag, int mode) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(grad), at::detail::infer_is_variable(grad))(grad, weight, indices, offsets, offset2bag, mode);
 }
-#ifdef NAMEDTENSOR_ENABLED
+#ifdef BUILD_NAMEDTENSOR
 static inline Tensor empty(IntArrayRef size, c10::optional<DimnameList> names, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::empty(int[] size, *, Dimname[]? names, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::empty.names(int[] size, *, Dimname[]? names, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (IntArrayRef, c10::optional<DimnameList>, const TensorOptions &)>(options.backend(), options.is_variable())(size, names, options);
 }
 #endif
 static inline Tensor empty(IntArrayRef size, const TensorOptions & options, c10::optional<MemoryFormat> memory_format) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::empty(int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::empty.memory_format(int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor");
     return table->getOp<Tensor (IntArrayRef, const TensorOptions &, c10::optional<MemoryFormat>)>(options.backend(), options.is_variable())(size, options, memory_format);
 }
 static inline Tensor _empty_affine_quantized(IntArrayRef size, const TensorOptions & options, double scale, int64_t zero_point, c10::optional<MemoryFormat> memory_format) {
@@ -1845,7 +1885,7 @@ static inline Tensor _empty_affine_quantized(IntArrayRef size, const TensorOptio
     return table->getOp<Tensor (IntArrayRef, const TensorOptions &, double, int64_t, c10::optional<MemoryFormat>)>(options.backend(), options.is_variable())(size, options, scale, zero_point, memory_format);
 }
 static inline Tensor & empty_out(Tensor & out, IntArrayRef size, c10::optional<MemoryFormat> memory_format) {
-    static auto table = globalATenDispatch().getOpTable("aten::empty(int[] size, *, MemoryFormat? memory_format=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::empty.out(int[] size, *, MemoryFormat? memory_format=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef, c10::optional<MemoryFormat>)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size, memory_format);
 }
 static inline Tensor empty_like(const Tensor & self) {
@@ -1854,7 +1894,7 @@ static inline Tensor empty_like(const Tensor & self) {
 }
 static inline Tensor empty_like(const Tensor & self, const TensorOptions & options, c10::optional<MemoryFormat> memory_format) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::empty_like(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False, MemoryFormat? memory_format=contiguous_format) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::empty_like.dtype(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False, MemoryFormat? memory_format=contiguous_format) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const TensorOptions &, c10::optional<MemoryFormat>)>(options.backend(), options.is_variable())(self, options, memory_format);
 }
 static inline Tensor empty_strided(IntArrayRef size, IntArrayRef stride, const TensorOptions & options) {
@@ -1871,7 +1911,7 @@ static inline Tensor & erf_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & erf_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::erf(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::erf.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor erfc(const Tensor & self) {
@@ -1883,7 +1923,7 @@ static inline Tensor & erfc_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & erfc_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::erfc(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::erfc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor exp(const Tensor & self) {
@@ -1895,7 +1935,7 @@ static inline Tensor & exp_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & exp_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::exp(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::exp.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor expm1(const Tensor & self) {
@@ -1907,7 +1947,7 @@ static inline Tensor & expm1_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & expm1_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::expm1(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::expm1.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor eye(int64_t n, const TensorOptions & options) {
@@ -1917,15 +1957,15 @@ static inline Tensor eye(int64_t n, const TensorOptions & options) {
 }
 static inline Tensor eye(int64_t n, int64_t m, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::eye(int n, int m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::eye.m(int n, int m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, int64_t, const TensorOptions &)>(options.backend(), options.is_variable())(n, m, options);
 }
 static inline Tensor & eye_out(Tensor & out, int64_t n) {
-    static auto table = globalATenDispatch().getOpTable("aten::eye(int n, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::eye.out(int n, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, n);
 }
 static inline Tensor & eye_out(Tensor & out, int64_t n, int64_t m) {
-    static auto table = globalATenDispatch().getOpTable("aten::eye(int n, int m, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::eye.m_out(int n, int m, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t, int64_t)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, n, m);
 }
 static inline Tensor flatten(const Tensor & self, int64_t start_dim, int64_t end_dim) {
@@ -1933,11 +1973,11 @@ static inline Tensor flatten(const Tensor & self, int64_t start_dim, int64_t end
     return table->getOp<Tensor (const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, start_dim, end_dim);
 }
 static inline Tensor & fill_(Tensor & self, Scalar value) {
-    static auto table = globalATenDispatch().getOpTable("aten::fill_(Tensor(a!) self, Scalar value) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::fill_.Scalar(Tensor(a!) self, Scalar value) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, value);
 }
 static inline Tensor & fill_(Tensor & self, const Tensor & value) {
-    static auto table = globalATenDispatch().getOpTable("aten::fill_(Tensor(a!) self, Tensor value) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::fill_.Tensor(Tensor(a!) self, Tensor value) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, value);
 }
 static inline Tensor floor(const Tensor & self) {
@@ -1949,7 +1989,7 @@ static inline Tensor & floor_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & floor_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::floor(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::floor.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor frac(const Tensor & self) {
@@ -1961,7 +2001,7 @@ static inline Tensor & frac_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & frac_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::frac(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::frac.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor full(IntArrayRef size, Scalar fill_value, const TensorOptions & options) {
@@ -1970,7 +2010,7 @@ static inline Tensor full(IntArrayRef size, Scalar fill_value, const TensorOptio
     return table->getOp<Tensor (IntArrayRef, Scalar, const TensorOptions &)>(options.backend(), options.is_variable())(size, fill_value, options);
 }
 static inline Tensor & full_out(Tensor & out, IntArrayRef size, Scalar fill_value) {
-    static auto table = globalATenDispatch().getOpTable("aten::full(int[] size, Scalar fill_value, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::full.out(int[] size, Scalar fill_value, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef, Scalar)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size, fill_value);
 }
 static inline Tensor full_like(const Tensor & self, Scalar fill_value) {
@@ -1979,7 +2019,7 @@ static inline Tensor full_like(const Tensor & self, Scalar fill_value) {
 }
 static inline Tensor full_like(const Tensor & self, Scalar fill_value, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::full_like(Tensor self, Scalar fill_value, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::full_like.dtype(Tensor self, Scalar fill_value, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar, const TensorOptions &)>(options.backend(), options.is_variable())(self, fill_value, options);
 }
 static inline Tensor from_file(std::string filename, c10::optional<bool> shared, c10::optional<int64_t> size, const TensorOptions & options) {
@@ -2014,7 +2054,7 @@ static inline Tensor hann_window(int64_t window_length, const TensorOptions & op
 }
 static inline Tensor hann_window(int64_t window_length, bool periodic, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::hann_window(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::hann_window.periodic(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, bool, const TensorOptions &)>(options.backend(), options.is_variable())(window_length, periodic, options);
 }
 static inline Tensor hamming_window(int64_t window_length, const TensorOptions & options) {
@@ -2024,17 +2064,17 @@ static inline Tensor hamming_window(int64_t window_length, const TensorOptions &
 }
 static inline Tensor hamming_window(int64_t window_length, bool periodic, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::hamming_window(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::hamming_window.periodic(int window_length, bool periodic, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, bool, const TensorOptions &)>(options.backend(), options.is_variable())(window_length, periodic, options);
 }
 static inline Tensor hamming_window(int64_t window_length, bool periodic, double alpha, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::hamming_window(int window_length, bool periodic, float alpha, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::hamming_window.periodic_alpha(int window_length, bool periodic, float alpha, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, bool, double, const TensorOptions &)>(options.backend(), options.is_variable())(window_length, periodic, alpha, options);
 }
 static inline Tensor hamming_window(int64_t window_length, bool periodic, double alpha, double beta, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::hamming_window(int window_length, bool periodic, float alpha, float beta, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::hamming_window.periodic_alpha_beta(int window_length, bool periodic, float alpha, float beta, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, bool, double, double, const TensorOptions &)>(options.backend(), options.is_variable())(window_length, periodic, alpha, beta, options);
 }
 static inline Tensor hinge_embedding_loss(const Tensor & self, const Tensor & target, double margin, int64_t reduction) {
@@ -2046,7 +2086,7 @@ static inline Tensor ger(const Tensor & self, const Tensor & vec2) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, vec2);
 }
 static inline Tensor & ger_out(Tensor & out, const Tensor & self, const Tensor & vec2) {
-    static auto table = globalATenDispatch().getOpTable("aten::ger(Tensor self, Tensor vec2, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ger.out(Tensor self, Tensor vec2, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, vec2);
 }
 static inline Tensor group_norm(const Tensor & input, int64_t num_groups, const Tensor & weight, const Tensor & bias, double eps, bool cudnn_enabled) {
@@ -2118,7 +2158,7 @@ static inline Tensor inverse(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & inverse_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::inverse(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::inverse.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor _inverse_helper(const Tensor & self) {
@@ -2170,7 +2210,7 @@ static inline std::tuple<Tensor,Tensor> kthvalue(const Tensor & self, int64_t k,
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, k, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> kthvalue_out(Tensor & values, Tensor & indices, const Tensor & self, int64_t k, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::kthvalue(Tensor self, int k, int dim=-1, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::kthvalue.values(Tensor self, int k, int dim=-1, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(values, indices, self, k, dim, keepdim);
 }
 static inline Tensor layer_norm(const Tensor & input, IntArrayRef normalized_shape, const Tensor & weight, const Tensor & bias, double eps, bool cudnn_enable) {
@@ -2205,6 +2245,14 @@ static inline std::tuple<Tensor,Tensor,double,int64_t> fbgemm_linear_quantize_we
     static auto table = globalATenDispatch().getOpTable("aten::fbgemm_linear_quantize_weight(Tensor input) -> (Tensor, Tensor, float, int)");
     return table->getOp<std::tuple<Tensor,Tensor,double,int64_t> (const Tensor &)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input);
 }
+static inline Tensor fbgemm_pack_gemm_matrix_fp16(const Tensor & input) {
+    static auto table = globalATenDispatch().getOpTable("aten::fbgemm_pack_gemm_matrix_fp16(Tensor input) -> Tensor");
+    return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input);
+}
+static inline Tensor fbgemm_linear_fp16_weight(const Tensor & input, const Tensor & packed_weight, const Tensor & bias) {
+    static auto table = globalATenDispatch().getOpTable("aten::fbgemm_linear_fp16_weight(Tensor input, Tensor packed_weight, Tensor bias) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, packed_weight, bias);
+}
 static inline Tensor fbgemm_pack_quantized_matrix(const Tensor & input, int64_t K, int64_t N) {
     static auto table = globalATenDispatch().getOpTable("aten::fbgemm_pack_quantized_matrix(Tensor input, int K, int N) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, K, N);
@@ -2219,7 +2267,7 @@ static inline Tensor linspace(Scalar start, Scalar end, int64_t steps, const Ten
     return table->getOp<Tensor (Scalar, Scalar, int64_t, const TensorOptions &)>(options.backend(), options.is_variable())(start, end, steps, options);
 }
 static inline Tensor & linspace_out(Tensor & out, Scalar start, Scalar end, int64_t steps) {
-    static auto table = globalATenDispatch().getOpTable("aten::linspace(Scalar start, Scalar end, int steps=100, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::linspace.out(Scalar start, Scalar end, int steps=100, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, Scalar, Scalar, int64_t)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, start, end, steps);
 }
 static inline Tensor log(const Tensor & self) {
@@ -2231,7 +2279,7 @@ static inline Tensor & log_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & log_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::log(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::log.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor log10(const Tensor & self) {
@@ -2243,7 +2291,7 @@ static inline Tensor & log10_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & log10_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::log10(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::log10.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor log1p(const Tensor & self) {
@@ -2255,7 +2303,7 @@ static inline Tensor & log1p_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & log1p_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::log1p(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::log1p.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor log2(const Tensor & self) {
@@ -2267,7 +2315,7 @@ static inline Tensor & log2_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & log2_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::log2(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::log2.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor logdet(const Tensor & self) {
@@ -2280,11 +2328,11 @@ static inline Tensor logspace(Scalar start, Scalar end, int64_t steps, double ba
     return table->getOp<Tensor (Scalar, Scalar, int64_t, double, const TensorOptions &)>(options.backend(), options.is_variable())(start, end, steps, base, options);
 }
 static inline Tensor & logspace_out(Tensor & out, Scalar start, Scalar end, int64_t steps, double base) {
-    static auto table = globalATenDispatch().getOpTable("aten::logspace(Scalar start, Scalar end, int steps=100, float base=10.0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::logspace.out(Scalar start, Scalar end, int steps=100, float base=10.0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, Scalar, Scalar, int64_t, double)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, start, end, steps, base);
 }
 static inline Tensor log_softmax(const Tensor & self, int64_t dim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::log_softmax(Tensor self, int dim, *, ScalarType? dtype=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::log_softmax(Tensor self, int dim, ScalarType? dtype=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, dtype);
 }
 static inline Tensor _log_softmax(const Tensor & self, int64_t dim, bool half_to_float) {
@@ -2300,7 +2348,7 @@ static inline Tensor logsumexp(const Tensor & self, IntArrayRef dim, bool keepdi
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline Tensor & logsumexp_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::logsumexp(Tensor self, int[1] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::logsumexp.out(Tensor self, int[1] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim);
 }
 static inline Tensor margin_ranking_loss(const Tensor & input1, const Tensor & input2, const Tensor & target, double margin, int64_t reduction) {
@@ -2312,11 +2360,11 @@ static inline Tensor matmul(const Tensor & self, const Tensor & other) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & matmul_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::matmul(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor matrix_rank(const Tensor & self, double tol, bool symmetric) {
-    static auto table = globalATenDispatch().getOpTable("aten::matrix_rank(Tensor self, float tol, bool symmetric=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::matrix_rank.tol(Tensor self, float tol, bool symmetric=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, double, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, tol, symmetric);
 }
 static inline Tensor matrix_rank(const Tensor & self, bool symmetric) {
@@ -2328,11 +2376,11 @@ static inline Tensor matrix_power(const Tensor & self, int64_t n) {
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, n);
 }
 static inline std::tuple<Tensor,Tensor> max(const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::max(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::max.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> max_out(Tensor & max, Tensor & max_values, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::max(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_values) -> (Tensor(a!) values, Tensor(b!) indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::max.dim_max(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_values) -> (Tensor(a!) values, Tensor(b!) indices)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(max, max_values, self, dim, keepdim);
 }
 static inline Tensor max_values(const Tensor & self, IntArrayRef dim, bool keepdim) {
@@ -2355,6 +2403,10 @@ static inline Tensor mkldnn_max_pool2d(const Tensor & self, IntArrayRef kernel_s
     static auto table = globalATenDispatch().getOpTable("aten::mkldnn_max_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, dilation, ceil_mode);
 }
+static inline Tensor quantized_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) {
+    static auto table = globalATenDispatch().getOpTable("aten::quantized_max_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, dilation);
+}
 static inline Tensor max_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode) {
     static auto table = globalATenDispatch().getOpTable("aten::max_pool3d(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, int[3] dilation=1, bool ceil_mode=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, dilation, ceil_mode);
@@ -2364,27 +2416,27 @@ static inline Tensor mean(const Tensor & self, c10::optional<ScalarType> dtype) 
     return table->getOp<Tensor (const Tensor &, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dtype);
 }
 static inline Tensor mean(const Tensor & self, IntArrayRef dim, bool keepdim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::mean(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::mean.dim(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim, dtype);
 }
 static inline Tensor & mean_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::mean(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::mean.out(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim, dtype);
 }
 static inline std::tuple<Tensor,Tensor> median(const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::median(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::median.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> median_out(Tensor & values, Tensor & indices, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::median(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::median.dim_values(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(values, indices, self, dim, keepdim);
 }
 static inline std::tuple<Tensor,Tensor> min(const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::min(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::min.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> min_out(Tensor & min, Tensor & min_indices, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::min(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!) values, Tensor(b!) indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::min.dim_min(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!) values, Tensor(b!) indices)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(min, min_indices, self, dim, keepdim);
 }
 static inline Tensor min_values(const Tensor & self, IntArrayRef dim, bool keepdim) {
@@ -2467,12 +2519,20 @@ static inline Tensor miopen_depthwise_convolution_backward_weight(IntArrayRef we
     static auto table = globalATenDispatch().getOpTable("aten::miopen_depthwise_convolution_backward_weight(int[] weight_size, Tensor grad_output, Tensor self, int[] padding, int[] stride, int[] dilation, int groups, bool benchmark, bool deterministic) -> Tensor");
     return table->getOp<Tensor (IntArrayRef, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, int64_t, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(weight_size, grad_output, self, padding, stride, dilation, groups, benchmark, deterministic);
 }
+static inline std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> miopen_rnn(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & hx, const Tensor & cx, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state) {
+    static auto table = globalATenDispatch().getOpTable("aten::miopen_rnn(Tensor input, Tensor[] weight, int weight_stride0, Tensor hx, Tensor? cx, int mode, int hidden_size, int num_layers, bool batch_first, float dropout, bool train, bool bidirectional, int[] batch_sizes, Tensor? dropout_state) -> (Tensor, Tensor, Tensor, Tensor, Tensor)");
+    return table->getOp<std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> (const Tensor &, TensorList, int64_t, const Tensor &, const Tensor &, int64_t, int64_t, int64_t, bool, double, bool, bool, IntArrayRef, const Tensor &)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, weight, weight_stride0, hx, cx, mode, hidden_size, num_layers, batch_first, dropout, train, bidirectional, batch_sizes, dropout_state);
+}
+static inline std::tuple<Tensor,Tensor,Tensor,std::vector<Tensor>> miopen_rnn_backward(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & weight_buf, const Tensor & hx, const Tensor & cx, const Tensor & output, const Tensor & grad_output, const Tensor & grad_hy, const Tensor & grad_cy, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state, const Tensor & reserve, std::array<bool,4> output_mask) {
+    static auto table = globalATenDispatch().getOpTable("aten::miopen_rnn_backward(Tensor input, Tensor[] weight, int weight_stride0, Tensor weight_buf, Tensor hx, Tensor? cx, Tensor output, Tensor? grad_output, Tensor? grad_hy, Tensor? grad_cy, int mode, int hidden_size, int num_layers, bool batch_first, float dropout, bool train, bool bidirectional, int[] batch_sizes, Tensor? dropout_state, Tensor reserve, bool[4] output_mask) -> (Tensor, Tensor, Tensor, Tensor[])");
+    return table->getOp<std::tuple<Tensor,Tensor,Tensor,std::vector<Tensor>> (const Tensor &, TensorList, int64_t, const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t, int64_t, bool, double, bool, bool, IntArrayRef, const Tensor &, const Tensor &, std::array<bool,4>)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, weight, weight_stride0, weight_buf, hx, cx, output, grad_output, grad_hy, grad_cy, mode, hidden_size, num_layers, batch_first, dropout, train, bidirectional, batch_sizes, dropout_state, reserve, output_mask);
+}
 static inline Tensor mm(const Tensor & self, const Tensor & mat2) {
     static auto table = globalATenDispatch().getOpTable("aten::mm(Tensor self, Tensor mat2) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, mat2);
 }
 static inline Tensor & mm_out(Tensor & out, const Tensor & self, const Tensor & mat2) {
-    static auto table = globalATenDispatch().getOpTable("aten::mm(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::mm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mat2);
 }
 static inline Tensor _sparse_mm(const Tensor & sparse, const Tensor & dense) {
@@ -2484,19 +2544,19 @@ static inline std::tuple<Tensor,Tensor> mode(const Tensor & self, int64_t dim, b
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> mode_out(Tensor & values, Tensor & indices, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::mode(Tensor self, int dim=-1, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::mode.values(Tensor self, int dim=-1, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(values, indices, self, dim, keepdim);
 }
 static inline Tensor mul(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::mul(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::mul.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & mul_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::mul(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::mul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor mul(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::mul(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::mul.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor mv(const Tensor & self, const Tensor & vec) {
@@ -2504,7 +2564,7 @@ static inline Tensor mv(const Tensor & self, const Tensor & vec) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, vec);
 }
 static inline Tensor & mv_out(Tensor & out, const Tensor & self, const Tensor & vec) {
-    static auto table = globalATenDispatch().getOpTable("aten::mv(Tensor self, Tensor vec, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::mv.out(Tensor self, Tensor vec, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, vec);
 }
 static inline Tensor mvlgamma(const Tensor & self, int64_t p) {
@@ -2530,6 +2590,10 @@ static inline Tensor batch_norm_elemt(const Tensor & input, const Tensor & weigh
 static inline std::tuple<Tensor,Tensor> batch_norm_gather_stats(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, int64_t count) {
     static auto table = globalATenDispatch().getOpTable("aten::batch_norm_gather_stats(Tensor input, Tensor mean, Tensor invstd, Tensor? running_mean, Tensor? running_var, float momentum, float eps, int count) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, double, double, int64_t)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, mean, invstd, running_mean, running_var, momentum, eps, count);
+}
+static inline std::tuple<Tensor,Tensor> batch_norm_gather_stats_with_counts(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, IntArrayRef counts) {
+    static auto table = globalATenDispatch().getOpTable("aten::batch_norm_gather_stats_with_counts(Tensor input, Tensor mean, Tensor invstd, Tensor? running_mean, Tensor? running_var, float momentum, float eps, int[] counts) -> (Tensor, Tensor)");
+    return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, double, double, IntArrayRef)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, mean, invstd, running_mean, running_var, momentum, eps, counts);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> native_batch_norm_backward(const Tensor & grad_out, const Tensor & input, const Tensor & weight, const Tensor & running_mean, const Tensor & running_var, const Tensor & save_mean, const Tensor & save_invstd, bool train, double eps, std::array<bool,3> output_mask) {
     static auto table = globalATenDispatch().getOpTable("aten::native_batch_norm_backward(Tensor grad_out, Tensor input, Tensor? weight, Tensor? running_mean, Tensor? running_var, Tensor? save_mean, Tensor? save_invstd, bool train, float eps, bool[3] output_mask) -> (Tensor, Tensor, Tensor)");
@@ -2573,7 +2637,7 @@ static inline Tensor ones(IntArrayRef size, const TensorOptions & options) {
     return table->getOp<Tensor (IntArrayRef, const TensorOptions &)>(options.backend(), options.is_variable())(size, options);
 }
 static inline Tensor & ones_out(Tensor & out, IntArrayRef size) {
-    static auto table = globalATenDispatch().getOpTable("aten::ones(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ones.out(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size);
 }
 static inline Tensor ones_like(const Tensor & self) {
@@ -2582,7 +2646,7 @@ static inline Tensor ones_like(const Tensor & self) {
 }
 static inline Tensor ones_like(const Tensor & self, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::ones_like(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::ones_like.dtype(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const TensorOptions &)>(options.backend(), options.is_variable())(self, options);
 }
 static inline Tensor pairwise_distance(const Tensor & x1, const Tensor & x2, double p, double eps, bool keepdim) {
@@ -2617,10 +2681,6 @@ static inline Tensor pixel_shuffle(const Tensor & self, int64_t upscale_factor) 
     static auto table = globalATenDispatch().getOpTable("aten::pixel_shuffle(Tensor self, int upscale_factor) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, upscale_factor);
 }
-static inline Tensor pin_memory(const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::pin_memory(Tensor self) -> Tensor");
-    return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
-}
 static inline Tensor pinverse(const Tensor & self, double rcond) {
     static auto table = globalATenDispatch().getOpTable("aten::pinverse(Tensor self, float rcond=1e-15) -> Tensor");
     return table->getOp<Tensor (const Tensor &, double)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, rcond);
@@ -2641,15 +2701,15 @@ static inline Tensor rand(IntArrayRef size, const TensorOptions & options) {
 }
 static inline Tensor rand(IntArrayRef size, Generator * generator, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::rand(int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::rand.generator(int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (IntArrayRef, Generator *, const TensorOptions &)>(options.backend(), options.is_variable())(size, generator, options);
 }
 static inline Tensor & rand_out(Tensor & out, IntArrayRef size) {
-    static auto table = globalATenDispatch().getOpTable("aten::rand(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::rand.out(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size);
 }
 static inline Tensor & rand_out(Tensor & out, IntArrayRef size, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::rand(int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::rand.generator_out(int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size, generator);
 }
 static inline Tensor rand_like(const Tensor & self) {
@@ -2658,7 +2718,7 @@ static inline Tensor rand_like(const Tensor & self) {
 }
 static inline Tensor rand_like(const Tensor & self, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::rand_like(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::rand_like.dtype(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const TensorOptions &)>(options.backend(), options.is_variable())(self, options);
 }
 static inline Tensor randint(int64_t high, IntArrayRef size, const TensorOptions & options) {
@@ -2668,33 +2728,33 @@ static inline Tensor randint(int64_t high, IntArrayRef size, const TensorOptions
 }
 static inline Tensor randint(int64_t high, IntArrayRef size, Generator * generator, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randint(int high, int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randint.generator(int high, int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, IntArrayRef, Generator *, const TensorOptions &)>(options.backend(), options.is_variable())(high, size, generator, options);
 }
 static inline Tensor randint(int64_t low, int64_t high, IntArrayRef size, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randint(int low, int high, int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randint.low(int low, int high, int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, int64_t, IntArrayRef, const TensorOptions &)>(options.backend(), options.is_variable())(low, high, size, options);
 }
 static inline Tensor randint(int64_t low, int64_t high, IntArrayRef size, Generator * generator, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randint(int low, int high, int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randint.low_generator(int low, int high, int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, int64_t, IntArrayRef, Generator *, const TensorOptions &)>(options.backend(), options.is_variable())(low, high, size, generator, options);
 }
 static inline Tensor & randint_out(Tensor & out, int64_t high, IntArrayRef size) {
-    static auto table = globalATenDispatch().getOpTable("aten::randint(int high, int[] size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randint.out(int high, int[] size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t, IntArrayRef)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, high, size);
 }
 static inline Tensor & randint_out(Tensor & out, int64_t high, IntArrayRef size, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::randint(int high, int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randint.generator_out(int high, int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t, IntArrayRef, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, high, size, generator);
 }
 static inline Tensor & randint_out(Tensor & out, int64_t low, int64_t high, IntArrayRef size) {
-    static auto table = globalATenDispatch().getOpTable("aten::randint(int low, int high, int[] size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randint.low_out(int low, int high, int[] size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t, int64_t, IntArrayRef)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, low, high, size);
 }
 static inline Tensor & randint_out(Tensor & out, int64_t low, int64_t high, IntArrayRef size, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::randint(int low, int high, int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randint.low_generator_out(int low, int high, int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t, int64_t, IntArrayRef, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, low, high, size, generator);
 }
 static inline Tensor randint_like(const Tensor & self, int64_t high) {
@@ -2702,17 +2762,17 @@ static inline Tensor randint_like(const Tensor & self, int64_t high) {
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, high);
 }
 static inline Tensor randint_like(const Tensor & self, int64_t low, int64_t high) {
-    static auto table = globalATenDispatch().getOpTable("aten::randint_like(Tensor self, int low, int high) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randint_like.low(Tensor self, int low, int high) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, low, high);
 }
 static inline Tensor randint_like(const Tensor & self, int64_t high, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randint_like(Tensor self, int high, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randint_like.dtype(Tensor self, int high, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, const TensorOptions &)>(options.backend(), options.is_variable())(self, high, options);
 }
 static inline Tensor randint_like(const Tensor & self, int64_t low, int64_t high, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randint_like(Tensor self, int low, int high, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randint_like.low_dtype(Tensor self, int low, int high, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, int64_t, const TensorOptions &)>(options.backend(), options.is_variable())(self, low, high, options);
 }
 static inline Tensor randn(IntArrayRef size, const TensorOptions & options) {
@@ -2722,15 +2782,15 @@ static inline Tensor randn(IntArrayRef size, const TensorOptions & options) {
 }
 static inline Tensor randn(IntArrayRef size, Generator * generator, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randn(int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randn.generator(int[] size, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (IntArrayRef, Generator *, const TensorOptions &)>(options.backend(), options.is_variable())(size, generator, options);
 }
 static inline Tensor & randn_out(Tensor & out, IntArrayRef size) {
-    static auto table = globalATenDispatch().getOpTable("aten::randn(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randn.out(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size);
 }
 static inline Tensor & randn_out(Tensor & out, IntArrayRef size, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::randn(int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randn.generator_out(int[] size, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size, generator);
 }
 static inline Tensor randn_like(const Tensor & self) {
@@ -2739,7 +2799,7 @@ static inline Tensor randn_like(const Tensor & self) {
 }
 static inline Tensor randn_like(const Tensor & self, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randn_like(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randn_like.dtype(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const TensorOptions &)>(options.backend(), options.is_variable())(self, options);
 }
 static inline Tensor randperm(int64_t n, const TensorOptions & options) {
@@ -2749,20 +2809,20 @@ static inline Tensor randperm(int64_t n, const TensorOptions & options) {
 }
 static inline Tensor randperm(int64_t n, Generator * generator, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::randperm(int n, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::randperm.generator(int n, *, Generator? generator, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (int64_t, Generator *, const TensorOptions &)>(options.backend(), options.is_variable())(n, generator, options);
 }
 static inline Tensor & randperm_out(Tensor & out, int64_t n) {
-    static auto table = globalATenDispatch().getOpTable("aten::randperm(int n, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randperm.out(int n, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, n);
 }
 static inline Tensor & randperm_out(Tensor & out, int64_t n, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::randperm(int n, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::randperm.generator_out(int n, *, Generator? generator, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, n, generator);
 }
 static inline Tensor range(Scalar start, Scalar end, Scalar step, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::range(Scalar start, Scalar end, Scalar step=1, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::range.step(Scalar start, Scalar end, Scalar step=1, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (Scalar, Scalar, Scalar, const TensorOptions &)>(options.backend(), options.is_variable())(start, end, step, options);
 }
 static inline Tensor range(Scalar start, Scalar end, const TensorOptions & options) {
@@ -2771,7 +2831,7 @@ static inline Tensor range(Scalar start, Scalar end, const TensorOptions & optio
     return table->getOp<Tensor (Scalar, Scalar, const TensorOptions &)>(options.backend(), options.is_variable())(start, end, options);
 }
 static inline Tensor & range_out(Tensor & out, Scalar start, Scalar end, Scalar step) {
-    static auto table = globalATenDispatch().getOpTable("aten::range(Scalar start, Scalar end, Scalar step=1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::range.out(Scalar start, Scalar end, Scalar step=1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, Scalar, Scalar, Scalar)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, start, end, step);
 }
 static inline Tensor reciprocal(const Tensor & self) {
@@ -2783,7 +2843,7 @@ static inline Tensor & reciprocal_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & reciprocal_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::reciprocal(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::reciprocal.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor neg(const Tensor & self) {
@@ -2795,19 +2855,19 @@ static inline Tensor & neg_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & neg_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::neg(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::neg.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor repeat_interleave(const Tensor & repeats) {
-    static auto table = globalATenDispatch().getOpTable("aten::repeat_interleave(Tensor repeats) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::repeat_interleave.Tensor(Tensor repeats) -> Tensor");
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(repeats), at::detail::infer_is_variable(repeats))(repeats);
 }
 static inline Tensor repeat_interleave(const Tensor & self, const Tensor & repeats, c10::optional<int64_t> dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::repeat_interleave(Tensor self, Tensor repeats, int? dim=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, repeats, dim);
 }
 static inline Tensor repeat_interleave(const Tensor & self, int64_t repeats, c10::optional<int64_t> dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::repeat_interleave(Tensor self, int repeats, int? dim=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::repeat_interleave.self_int(Tensor self, int repeats, int? dim=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, repeats, dim);
 }
 static inline Tensor reshape(const Tensor & self, IntArrayRef shape) {
@@ -2827,7 +2887,7 @@ static inline Tensor & round_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & round_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::round(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::round.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor rrelu(const Tensor & self, Scalar lower, Scalar upper, bool training, Generator * generator) {
@@ -2879,17 +2939,17 @@ static inline Tensor & rsqrt_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & rsqrt_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::rsqrt(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::rsqrt.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
-#ifdef NAMEDTENSOR_ENABLED
+#ifdef BUILD_NAMEDTENSOR
 static inline Tensor select(const Tensor & self, Dimname dim, int64_t index) {
-    static auto table = globalATenDispatch().getOpTable("aten::select(Tensor(a) self, Dimname dim, int index) -> Tensor(a)");
+    static auto table = globalATenDispatch().getOpTable("aten::select.Dimname(Tensor(a) self, Dimname dim, int index) -> Tensor(a)");
     return table->getOp<Tensor (const Tensor &, Dimname, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index);
 }
 #endif
 static inline Tensor select(const Tensor & self, int64_t dim, int64_t index) {
-    static auto table = globalATenDispatch().getOpTable("aten::select(Tensor(a) self, int dim, int index) -> Tensor(a)");
+    static auto table = globalATenDispatch().getOpTable("aten::select.int(Tensor(a) self, int dim, int index) -> Tensor(a)");
     return table->getOp<Tensor (const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index);
 }
 static inline Tensor selu(const Tensor & self) {
@@ -2917,7 +2977,7 @@ static inline Tensor & sigmoid_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & sigmoid_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::sigmoid(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sigmoid.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor sin(const Tensor & self) {
@@ -2929,7 +2989,7 @@ static inline Tensor & sin_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & sin_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::sin(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sin.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor sinh(const Tensor & self) {
@@ -2941,7 +3001,7 @@ static inline Tensor & sinh_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & sinh_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::sinh(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sinh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor detach(const Tensor & self) {
@@ -2953,9 +3013,15 @@ static inline Tensor & detach_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline int64_t size(const Tensor & self, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::size(Tensor self, int dim) -> int");
+    static auto table = globalATenDispatch().getOpTable("aten::size.int(Tensor self, int dim) -> int");
     return table->getOp<int64_t (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
 }
+#ifdef BUILD_NAMEDTENSOR
+static inline int64_t size(const Tensor & self, Dimname dim) {
+    static auto table = globalATenDispatch().getOpTable("aten::size.Dimname(Tensor self, Dimname dim) -> int");
+    return table->getOp<int64_t (const Tensor &, Dimname)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
+}
+#endif
 static inline Tensor slice(const Tensor & self, int64_t dim, int64_t start, int64_t end, int64_t step) {
     static auto table = globalATenDispatch().getOpTable("aten::slice(Tensor(a) self, int dim=0, int start=0, int end=9223372036854775807, int step=1) -> Tensor(a)");
     return table->getOp<Tensor (const Tensor &, int64_t, int64_t, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, start, end, step);
@@ -2981,31 +3047,31 @@ static inline Tensor _softmax_backward_data(const Tensor & grad_output, const Te
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, output, dim, self);
 }
 static inline Tensor & _sparse_add_out(Tensor & out, const Tensor & self, const Tensor & other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_add(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_add.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other, alpha);
 }
 static inline Tensor & _sparse_dense_add_out(Tensor & out, const Tensor & self, const Tensor & other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_dense_add(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_dense_add.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other, alpha);
 }
 static inline Tensor & _sparse_div_zerodim_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_div_zerodim(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_div_zerodim.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor & _sparse_div_scalar_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_div_scalar(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_div_scalar.out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor & _sparse_mul_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_mul(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_mul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor & _sparse_mul_zerodim_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_mul_zerodim(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_mul_zerodim.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor & _sparse_mul_scalar_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_mul_scalar(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_mul_scalar.out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline std::vector<Tensor> split(const Tensor & self, int64_t split_size, int64_t dim) {
@@ -3021,7 +3087,7 @@ static inline Tensor squeeze(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor squeeze(const Tensor & self, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::squeeze(Tensor(a) self, int dim) -> Tensor(a)");
+    static auto table = globalATenDispatch().getOpTable("aten::squeeze.dim(Tensor(a) self, int dim) -> Tensor(a)");
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
 }
 static inline Tensor sspaddmm(const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
@@ -3029,7 +3095,7 @@ static inline Tensor sspaddmm(const Tensor & self, const Tensor & mat1, const Te
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, mat1, mat2, beta, alpha);
 }
 static inline Tensor & sspaddmm_out(Tensor & out, const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::sspaddmm(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sspaddmm.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mat1, mat2, beta, alpha);
 }
 static inline Tensor stack(TensorList tensors, int64_t dim) {
@@ -3037,7 +3103,7 @@ static inline Tensor stack(TensorList tensors, int64_t dim) {
     return table->getOp<Tensor (TensorList, int64_t)>(at::detail::infer_backend(tensors), at::detail::infer_is_variable(tensors))(tensors, dim);
 }
 static inline Tensor & stack_out(Tensor & out, TensorList tensors, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::stack(Tensor[] tensors, int dim=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::stack.out(Tensor[] tensors, int dim=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, TensorList, int64_t)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, tensors, dim);
 }
 static inline Tensor stft(const Tensor & self, int64_t n_fft, c10::optional<int64_t> hop_length, c10::optional<int64_t> win_length, const Tensor & window, bool normalized, bool onesided) {
@@ -3045,21 +3111,39 @@ static inline Tensor stft(const Tensor & self, int64_t n_fft, c10::optional<int6
     return table->getOp<Tensor (const Tensor &, int64_t, c10::optional<int64_t>, c10::optional<int64_t>, const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, n_fft, hop_length, win_length, window, normalized, onesided);
 }
 static inline int64_t stride(const Tensor & self, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::stride(Tensor self, int dim) -> int");
+    static auto table = globalATenDispatch().getOpTable("aten::stride.int(Tensor self, int dim) -> int");
     return table->getOp<int64_t (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
 }
+#ifdef BUILD_NAMEDTENSOR
+static inline int64_t stride(const Tensor & self, Dimname dim) {
+    static auto table = globalATenDispatch().getOpTable("aten::stride.Dimname(Tensor self, Dimname dim) -> int");
+    return table->getOp<int64_t (const Tensor &, Dimname)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
+}
+#endif
 static inline Tensor sum(const Tensor & self, c10::optional<ScalarType> dtype) {
     static auto table = globalATenDispatch().getOpTable("aten::sum(Tensor self, *, ScalarType? dtype=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dtype);
 }
 static inline Tensor sum(const Tensor & self, IntArrayRef dim, bool keepdim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::sum(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::sum.dim_IntList(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim, dtype);
 }
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor sum(const Tensor & self, DimnameList dim, bool keepdim, c10::optional<ScalarType> dtype) {
+    static auto table = globalATenDispatch().getOpTable("aten::sum.dim_DimnameList(Tensor self, Dimname[1] dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, DimnameList, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim, dtype);
+}
+#endif
 static inline Tensor & sum_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::sum(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sum.IntList_out(Tensor self, int[1] dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim, dtype);
 }
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor & sum_out(Tensor & out, const Tensor & self, DimnameList dim, bool keepdim, c10::optional<ScalarType> dtype) {
+    static auto table = globalATenDispatch().getOpTable("aten::sum.DimnameList_out(Tensor self, Dimname[1] dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, const Tensor &, DimnameList, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim, dtype);
+}
+#endif
 static inline Tensor sqrt(const Tensor & self) {
     static auto table = globalATenDispatch().getOpTable("aten::sqrt(Tensor self) -> Tensor");
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
@@ -3069,7 +3153,7 @@ static inline Tensor & sqrt_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & sqrt_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::sqrt(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sqrt.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor std(const Tensor & self, bool unbiased) {
@@ -3077,7 +3161,7 @@ static inline Tensor std(const Tensor & self, bool unbiased) {
     return table->getOp<Tensor (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, unbiased);
 }
 static inline Tensor std(const Tensor & self, IntArrayRef dim, bool unbiased, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::std(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::std.dim(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, unbiased, keepdim);
 }
 static inline std::tuple<Tensor,Tensor> std_mean(const Tensor & self, bool unbiased) {
@@ -3085,11 +3169,11 @@ static inline std::tuple<Tensor,Tensor> std_mean(const Tensor & self, bool unbia
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, unbiased);
 }
 static inline std::tuple<Tensor,Tensor> std_mean(const Tensor & self, IntArrayRef dim, bool unbiased, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::std_mean(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::std_mean.dim(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, unbiased, keepdim);
 }
 static inline Tensor & std_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool unbiased, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::std(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::std.out(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, unbiased, keepdim);
 }
 static inline Tensor prod(const Tensor & self, c10::optional<ScalarType> dtype) {
@@ -3097,13 +3181,25 @@ static inline Tensor prod(const Tensor & self, c10::optional<ScalarType> dtype) 
     return table->getOp<Tensor (const Tensor &, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dtype);
 }
 static inline Tensor prod(const Tensor & self, int64_t dim, bool keepdim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::prod(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::prod.dim_int(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim, dtype);
 }
 static inline Tensor & prod_out(Tensor & out, const Tensor & self, int64_t dim, bool keepdim, c10::optional<ScalarType> dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::prod(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::prod.int_out(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim, dtype);
 }
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor prod(const Tensor & self, Dimname dim, bool keepdim, c10::optional<ScalarType> dtype) {
+    static auto table = globalATenDispatch().getOpTable("aten::prod.dim_Dimname(Tensor self, Dimname dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, Dimname, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim, dtype);
+}
+#endif
+#ifdef BUILD_NAMEDTENSOR
+static inline Tensor & prod_out(Tensor & out, const Tensor & self, Dimname dim, bool keepdim, c10::optional<ScalarType> dtype) {
+    static auto table = globalATenDispatch().getOpTable("aten::prod.Dimname_out(Tensor self, Dimname dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, const Tensor &, Dimname, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim, dtype);
+}
+#endif
 static inline Tensor t(const Tensor & self) {
     static auto table = globalATenDispatch().getOpTable("aten::t(Tensor(a) self) -> Tensor(a)");
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
@@ -3117,7 +3213,7 @@ static inline Tensor & tan_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & tan_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::tan(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::tan.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor tanh(const Tensor & self) {
@@ -3129,7 +3225,7 @@ static inline Tensor & tanh_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & tanh_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::tanh(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::tanh.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor tensordot(const Tensor & self, const Tensor & other, IntArrayRef dims_self, IntArrayRef dims_other) {
@@ -3145,7 +3241,7 @@ static inline Tensor & threshold_(Tensor & self, Scalar threshold, Scalar value)
     return table->getOp<Tensor & (Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, threshold, value);
 }
 static inline Tensor & threshold_out(Tensor & out, const Tensor & self, Scalar threshold, Scalar value) {
-    static auto table = globalATenDispatch().getOpTable("aten::threshold(Tensor self, Scalar threshold, Scalar value, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::threshold.out(Tensor self, Scalar threshold, Scalar value, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, threshold, value);
 }
 static inline Tensor threshold_backward(const Tensor & grad_output, const Tensor & self, Scalar threshold) {
@@ -3181,11 +3277,11 @@ static inline Tensor rot90(const Tensor & self, int64_t k, IntArrayRef dims) {
     return table->getOp<Tensor (const Tensor &, int64_t, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, k, dims);
 }
 static inline Tensor trapz(const Tensor & y, const Tensor & x, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::trapz(Tensor y, Tensor x, *, int dim=-1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::trapz.x(Tensor y, Tensor x, *, int dim=-1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(y), at::detail::infer_is_variable(y))(y, x, dim);
 }
 static inline Tensor trapz(const Tensor & y, double dx, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::trapz(Tensor y, *, float dx=1, int dim=-1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::trapz.dx(Tensor y, *, float dx=1, int dim=-1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, double, int64_t)>(at::detail::infer_backend(y), at::detail::infer_is_variable(y))(y, dx, dim);
 }
 static inline Tensor _trilinear(const Tensor & i1, const Tensor & i2, const Tensor & i3, IntArrayRef expand1, IntArrayRef expand2, IntArrayRef expand3, IntArrayRef sumdim, int64_t unroll_dim) {
@@ -3205,12 +3301,12 @@ static inline Tensor & trunc_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & trunc_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::trunc(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::trunc.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
-static inline bool _has_same_tensorimpl_type(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::_has_same_tensorimpl_type(Tensor self, Tensor other) -> bool");
-    return table->getOp<bool (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
+static inline bool _has_compatible_shallow_copy_type(const Tensor & self, const Tensor & from) {
+    static auto table = globalATenDispatch().getOpTable("aten::_has_compatible_shallow_copy_type(Tensor self, Tensor from) -> bool");
+    return table->getOp<bool (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, from);
 }
 static inline std::tuple<Tensor,Tensor> _unique(const Tensor & self, bool sorted, bool return_inverse) {
     static auto table = globalATenDispatch().getOpTable("aten::_unique(Tensor self, bool sorted=True, bool return_inverse=False) -> (Tensor, Tensor)");
@@ -3245,11 +3341,11 @@ static inline Tensor var(const Tensor & self, bool unbiased) {
     return table->getOp<Tensor (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, unbiased);
 }
 static inline Tensor var(const Tensor & self, IntArrayRef dim, bool unbiased, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::var(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::var.dim(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, unbiased, keepdim);
 }
 static inline Tensor & var_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool unbiased, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::var(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::var.out(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, unbiased, keepdim);
 }
 static inline std::tuple<Tensor,Tensor> var_mean(const Tensor & self, bool unbiased) {
@@ -3257,12 +3353,16 @@ static inline std::tuple<Tensor,Tensor> var_mean(const Tensor & self, bool unbia
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, unbiased);
 }
 static inline std::tuple<Tensor,Tensor> var_mean(const Tensor & self, IntArrayRef dim, bool unbiased, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::var_mean(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::var_mean.dim(Tensor self, int[1] dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, unbiased, keepdim);
 }
 static inline Tensor where(const Tensor & condition, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::where(Tensor condition, Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::where.self(Tensor condition, Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(condition, self, other);
+}
+static inline std::vector<Tensor> where(const Tensor & condition) {
+    static auto table = globalATenDispatch().getOpTable("aten::where(Tensor condition) -> Tensor[]");
+    return table->getOp<std::vector<Tensor> (const Tensor &)>(at::detail::infer_backend(condition), at::detail::infer_is_variable(condition))(condition);
 }
 static inline Tensor _s_where(const Tensor & condition, const Tensor & self, const Tensor & other) {
     static auto table = globalATenDispatch().getOpTable("aten::_s_where(Tensor condition, Tensor self, Tensor other) -> Tensor");
@@ -3294,7 +3394,7 @@ static inline Tensor zeros(IntArrayRef size, const TensorOptions & options) {
     return table->getOp<Tensor (IntArrayRef, const TensorOptions &)>(options.backend(), options.is_variable())(size, options);
 }
 static inline Tensor & zeros_out(Tensor & out, IntArrayRef size) {
-    static auto table = globalATenDispatch().getOpTable("aten::zeros(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::zeros.out(int[] size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, IntArrayRef)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, size);
 }
 static inline Tensor zeros_like(const Tensor & self) {
@@ -3303,7 +3403,7 @@ static inline Tensor zeros_like(const Tensor & self) {
 }
 static inline Tensor zeros_like(const Tensor & self, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::zeros_like(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::zeros_like.dtype(Tensor self, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const TensorOptions &)>(options.backend(), options.is_variable())(self, options);
 }
 static inline Tensor _standard_gamma_grad(const Tensor & self, const Tensor & output) {
@@ -3335,15 +3435,15 @@ static inline Tensor _sparse_sum(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor _sparse_sum(const Tensor & self, ScalarType dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_sum(Tensor self, *, ScalarType dtype) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_sum.dtype(Tensor self, *, ScalarType dtype) -> Tensor");
     return table->getOp<Tensor (const Tensor &, ScalarType)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dtype);
 }
 static inline Tensor _sparse_sum(const Tensor & self, IntArrayRef dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_sum(Tensor self, int[1] dim) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_sum.dim(Tensor self, int[1] dim) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
 }
 static inline Tensor _sparse_sum(const Tensor & self, IntArrayRef dim, ScalarType dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::_sparse_sum(Tensor self, int[1] dim, *, ScalarType dtype) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::_sparse_sum.dim_dtype(Tensor self, int[1] dim, *, ScalarType dtype) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, ScalarType)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, dtype);
 }
 static inline Tensor _sparse_sum_backward(const Tensor & grad, const Tensor & self, IntArrayRef dim) {
@@ -3351,27 +3451,27 @@ static inline Tensor _sparse_sum_backward(const Tensor & grad, const Tensor & se
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad, self, dim);
 }
 static inline Tensor norm(const Tensor & self, c10::optional<Scalar> p, ScalarType dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::norm(Tensor self, Scalar? p, *, ScalarType dtype) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::norm.ScalarOpt_dtype(Tensor self, Scalar? p, *, ScalarType dtype) -> Tensor");
     return table->getOp<Tensor (const Tensor &, c10::optional<Scalar>, ScalarType)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, p, dtype);
 }
 static inline Tensor norm(const Tensor & self, Scalar p) {
-    static auto table = globalATenDispatch().getOpTable("aten::norm(Tensor self, Scalar p=2) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::norm.Scalar(Tensor self, Scalar p=2) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, p);
 }
 static inline Tensor norm(const Tensor & self, c10::optional<Scalar> p, IntArrayRef dim, bool keepdim, ScalarType dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::norm(Tensor self, Scalar? p, int[1] dim, bool keepdim, *, ScalarType dtype) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::norm.ScalarOpt_dim_dtype(Tensor self, Scalar? p, int[1] dim, bool keepdim, *, ScalarType dtype) -> Tensor");
     return table->getOp<Tensor (const Tensor &, c10::optional<Scalar>, IntArrayRef, bool, ScalarType)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, p, dim, keepdim, dtype);
 }
 static inline Tensor norm(const Tensor & self, c10::optional<Scalar> p, IntArrayRef dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::norm(Tensor self, Scalar? p, int[1] dim, bool keepdim=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::norm.ScalarOpt_dim(Tensor self, Scalar? p, int[1] dim, bool keepdim=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, c10::optional<Scalar>, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, p, dim, keepdim);
 }
 static inline Tensor & norm_out(Tensor & out, const Tensor & self, c10::optional<Scalar> p, IntArrayRef dim, bool keepdim, ScalarType dtype) {
-    static auto table = globalATenDispatch().getOpTable("aten::norm(Tensor self, Scalar? p, int[1] dim, bool keepdim, *, ScalarType dtype, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::norm.dtype_out(Tensor self, Scalar? p, int[1] dim, bool keepdim, *, ScalarType dtype, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, c10::optional<Scalar>, IntArrayRef, bool, ScalarType)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, p, dim, keepdim, dtype);
 }
 static inline Tensor & norm_out(Tensor & out, const Tensor & self, c10::optional<Scalar> p, IntArrayRef dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::norm(Tensor self, Scalar? p, int[1] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::norm.out(Tensor self, Scalar? p, int[1] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, c10::optional<Scalar>, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, p, dim, keepdim);
 }
 static inline Tensor frobenius_norm(const Tensor & self) {
@@ -3379,11 +3479,11 @@ static inline Tensor frobenius_norm(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor frobenius_norm(const Tensor & self, IntArrayRef dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::frobenius_norm(Tensor self, int[1] dim, bool keepdim=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::frobenius_norm.dim(Tensor self, int[1] dim, bool keepdim=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline Tensor & frobenius_norm_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::frobenius_norm(Tensor self, int[1] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::frobenius_norm.out(Tensor self, int[1] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim);
 }
 static inline Tensor nuclear_norm(const Tensor & self, bool keepdim) {
@@ -3391,15 +3491,15 @@ static inline Tensor nuclear_norm(const Tensor & self, bool keepdim) {
     return table->getOp<Tensor (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, keepdim);
 }
 static inline Tensor & nuclear_norm_out(Tensor & out, const Tensor & self, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::nuclear_norm(Tensor self, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::nuclear_norm.out(Tensor self, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, keepdim);
 }
 static inline Tensor nuclear_norm(const Tensor & self, IntArrayRef dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::nuclear_norm(Tensor self, int[2] dim, bool keepdim=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::nuclear_norm.dim(Tensor self, int[2] dim, bool keepdim=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline Tensor & nuclear_norm_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::nuclear_norm(Tensor self, int[2] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::nuclear_norm.dim_out(Tensor self, int[2] dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, keepdim);
 }
 static inline Tensor clone(const Tensor & self) {
@@ -3411,11 +3511,11 @@ static inline Tensor & resize_as_(Tensor & self, const Tensor & the_template) {
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, the_template);
 }
 static inline Tensor & pow_out(Tensor & out, const Tensor & self, Scalar exponent) {
-    static auto table = globalATenDispatch().getOpTable("aten::pow(Tensor self, Scalar exponent, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::pow.Tensor_Scalar_out(Tensor self, Scalar exponent, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, exponent);
 }
 static inline Tensor pow(const Tensor & self, Scalar exponent) {
-    static auto table = globalATenDispatch().getOpTable("aten::pow(Tensor self, Scalar exponent) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::pow.Tensor_Scalar(Tensor self, Scalar exponent) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, exponent);
 }
 static inline Tensor & zero_(Tensor & self) {
@@ -3423,27 +3523,27 @@ static inline Tensor & zero_(Tensor & self) {
     return table->getOp<Tensor & (Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & sub_out(Tensor & out, const Tensor & self, const Tensor & other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::sub(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sub.out(Tensor self, Tensor other, *, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other, alpha);
 }
 static inline Tensor sub(const Tensor & self, const Tensor & other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::sub(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::sub.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, alpha);
 }
 static inline Tensor sub(const Tensor & self, Scalar other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::sub(Tensor self, Scalar other, Scalar alpha=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::sub.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, alpha);
 }
 static inline Tensor rsub(const Tensor & self, const Tensor & other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::rsub(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::rsub.Tensor(Tensor self, Tensor other, *, Scalar alpha=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, alpha);
 }
 static inline Tensor rsub(const Tensor & self, Scalar other, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::rsub(Tensor self, Scalar other, Scalar alpha=1) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::rsub.Scalar(Tensor self, Scalar other, Scalar alpha=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, alpha);
 }
 static inline Tensor & s_native_addmm_out(Tensor & out, const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::s_native_addmm(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::s_native_addmm.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mat1, mat2, beta, alpha);
 }
 static inline Tensor s_native_addmm(const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
@@ -3459,7 +3559,7 @@ static inline Tensor _sparse_addmm(const Tensor & self, const Tensor & sparse, c
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, sparse, dense, beta, alpha);
 }
 static inline Tensor & addmm_out(Tensor & out, const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::addmm(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::addmm.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mat1, mat2, beta, alpha);
 }
 static inline Tensor addmm(const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
@@ -3468,17 +3568,17 @@ static inline Tensor addmm(const Tensor & self, const Tensor & mat1, const Tenso
 }
 static inline Tensor sparse_coo_tensor(IntArrayRef size, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::sparse_coo_tensor(int[] size, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::sparse_coo_tensor.size(int[] size, *, ScalarType dtype, Layout layout, Device device, bool pin_memory=False) -> Tensor");
     return table->getOp<Tensor (IntArrayRef, const TensorOptions &)>(options.backend(), options.is_variable())(size, options);
 }
 static inline Tensor sparse_coo_tensor(const Tensor & indices, const Tensor & values, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::sparse_coo_tensor(Tensor indices, Tensor values, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::sparse_coo_tensor.indices(Tensor indices, Tensor values, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const TensorOptions &)>(options.backend(), options.is_variable())(indices, values, options);
 }
 static inline Tensor sparse_coo_tensor(const Tensor & indices, const Tensor & values, IntArrayRef size, const TensorOptions & options) {
     globalLegacyTypeDispatch().initForBackend(options.backend());
-    static auto table = globalATenDispatch().getOpTable("aten::sparse_coo_tensor(Tensor indices, Tensor values, int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::sparse_coo_tensor.indices_size(Tensor indices, Tensor values, int[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, const TensorOptions &)>(options.backend(), options.is_variable())(indices, values, size, options);
 }
 static inline Tensor _sparse_coo_tensor_unsafe(const Tensor & indices, const Tensor & values, IntArrayRef size, const TensorOptions & options) {
@@ -3501,7 +3601,7 @@ static inline Tensor to_dense_backward(const Tensor & grad, const Tensor & input
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(grad), at::detail::infer_is_variable(grad))(grad, input);
 }
 static inline Tensor & hspmm_out(Tensor & out, const Tensor & mat1, const Tensor & mat2) {
-    static auto table = globalATenDispatch().getOpTable("aten::hspmm(Tensor mat1, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::hspmm.out(Tensor mat1, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, mat1, mat2);
 }
 static inline Tensor hspmm(const Tensor & mat1, const Tensor & mat2) {
@@ -3560,6 +3660,14 @@ static inline Tensor _per_tensor_affine_qtensor(const Tensor & self, double scal
     static auto table = globalATenDispatch().getOpTable("aten::_per_tensor_affine_qtensor(Tensor self, float scale, int zero_point) -> Tensor");
     return table->getOp<Tensor (const Tensor &, double, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, scale, zero_point);
 }
+static inline Tensor fake_quantize_per_tensor_affine(const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max) {
+    static auto table = globalATenDispatch().getOpTable("aten::fake_quantize_per_tensor_affine(Tensor self, float scale, int zero_point, int quant_min, int quant_max) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, double, int64_t, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, scale, zero_point, quant_min, quant_max);
+}
+static inline Tensor fake_quantize_per_tensor_affine_backward(const Tensor & grad, const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max) {
+    static auto table = globalATenDispatch().getOpTable("aten::fake_quantize_per_tensor_affine_backward(Tensor grad, Tensor self, float scale, int zero_point, int quant_min, int quant_max) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, const Tensor &, double, int64_t, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad, self, scale, zero_point, quant_min, quant_max);
+}
 static inline std::vector<Tensor> meshgrid(TensorList tensors) {
     static auto table = globalATenDispatch().getOpTable("aten::meshgrid(Tensor[] tensors) -> Tensor[]");
     return table->getOp<std::vector<Tensor> (TensorList)>(at::detail::infer_backend(tensors), at::detail::infer_is_variable(tensors))(tensors);
@@ -3593,35 +3701,35 @@ static inline std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> _thnn_fused_gru_cel
     return table->getOp<std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, bool)>(at::detail::infer_backend(grad_hy), at::detail::infer_is_variable(grad_hy))(grad_hy, workspace, has_bias);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) {
-    static auto table = globalATenDispatch().getOpTable("aten::lstm(Tensor input, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::lstm.input(Tensor input, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, TensorList, TensorList, bool, int64_t, double, bool, bool, bool)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> lstm(const Tensor & data, const Tensor & batch_sizes, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional) {
-    static auto table = globalATenDispatch().getOpTable("aten::lstm(Tensor data, Tensor batch_sizes, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::lstm.data(Tensor data, Tensor batch_sizes, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, TensorList, TensorList, bool, int64_t, double, bool, bool)>(at::detail::infer_backend(data), at::detail::infer_is_variable(data))(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional);
 }
 static inline std::tuple<Tensor,Tensor> gru(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) {
-    static auto table = globalATenDispatch().getOpTable("aten::gru(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::gru.input(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool, bool)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
 }
 static inline std::tuple<Tensor,Tensor> gru(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional) {
-    static auto table = globalATenDispatch().getOpTable("aten::gru(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::gru.data(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool)>(at::detail::infer_backend(data), at::detail::infer_is_variable(data))(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional);
 }
 static inline std::tuple<Tensor,Tensor> rnn_tanh(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) {
-    static auto table = globalATenDispatch().getOpTable("aten::rnn_tanh(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::rnn_tanh.input(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool, bool)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
 }
 static inline std::tuple<Tensor,Tensor> rnn_tanh(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional) {
-    static auto table = globalATenDispatch().getOpTable("aten::rnn_tanh(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::rnn_tanh.data(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool)>(at::detail::infer_backend(data), at::detail::infer_is_variable(data))(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional);
 }
 static inline std::tuple<Tensor,Tensor> rnn_relu(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) {
-    static auto table = globalATenDispatch().getOpTable("aten::rnn_relu(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::rnn_relu.input(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool, bool)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
 }
 static inline std::tuple<Tensor,Tensor> rnn_relu(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional) {
-    static auto table = globalATenDispatch().getOpTable("aten::rnn_relu(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)");
+    static auto table = globalATenDispatch().getOpTable("aten::rnn_relu.data(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool)>(at::detail::infer_backend(data), at::detail::infer_is_variable(data))(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional);
 }
 static inline std::tuple<Tensor,Tensor> lstm_cell(const Tensor & input, TensorList hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh) {
@@ -3640,9 +3748,17 @@ static inline Tensor rnn_relu_cell(const Tensor & input, const Tensor & hx, cons
     static auto table = globalATenDispatch().getOpTable("aten::rnn_relu_cell(Tensor input, Tensor hx, Tensor w_ih, Tensor w_hh, Tensor? b_ih=None, Tensor? b_hh=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, w_ih, w_hh, b_ih, b_hh);
 }
-static inline std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) {
-    static auto table = globalATenDispatch().getOpTable("aten::quantized_lstm(Tensor input, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor)");
-    return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, TensorList, TensorList, bool, int64_t, double, bool, bool, bool)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
+static inline std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first, c10::optional<ScalarType> dtype) {
+    static auto table = globalATenDispatch().getOpTable("aten::quantized_lstm(Tensor input, Tensor[] hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first, *, ScalarType? dtype=None) -> (Tensor, Tensor, Tensor)");
+    return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, TensorList, TensorList, bool, int64_t, double, bool, bool, bool, c10::optional<ScalarType>)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first, dtype);
+}
+static inline std::tuple<Tensor,Tensor> quantized_gru(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) {
+    static auto table = globalATenDispatch().getOpTable("aten::quantized_gru.input(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)");
+    return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool, bool)>(at::detail::infer_backend(input), at::detail::infer_is_variable(input))(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
+}
+static inline std::tuple<Tensor,Tensor> quantized_gru(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional) {
+    static auto table = globalATenDispatch().getOpTable("aten::quantized_gru.data(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)");
+    return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, TensorList, bool, int64_t, double, bool, bool)>(at::detail::infer_backend(data), at::detail::infer_is_variable(data))(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional);
 }
 static inline std::tuple<Tensor,Tensor> quantized_lstm_cell(const Tensor & input, TensorList hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh) {
     static auto table = globalATenDispatch().getOpTable("aten::quantized_lstm_cell(Tensor input, Tensor[] hx, Tensor w_ih, Tensor w_hh, Tensor b_ih, Tensor b_hh, Tensor packed_ih, Tensor packed_hh, Tensor col_offsets_ih, Tensor col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh) -> (Tensor, Tensor)");
@@ -3673,11 +3789,11 @@ static inline std::tuple<Tensor,Tensor> _pad_packed_sequence(const Tensor & data
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, bool, Scalar, int64_t)>(at::detail::infer_backend(data), at::detail::infer_is_variable(data))(data, batch_sizes, batch_first, padding_value, total_length);
 }
 static inline Tensor masked_fill(const Tensor & self, const Tensor & mask, Scalar value) {
-    static auto table = globalATenDispatch().getOpTable("aten::masked_fill(Tensor self, Tensor mask, Scalar value) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::masked_fill.Scalar(Tensor self, Tensor mask, Scalar value) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, mask, value);
 }
 static inline Tensor masked_fill(const Tensor & self, const Tensor & mask, const Tensor & value) {
-    static auto table = globalATenDispatch().getOpTable("aten::masked_fill(Tensor self, Tensor mask, Tensor value) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::masked_fill.Tensor(Tensor self, Tensor mask, Tensor value) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, mask, value);
 }
 static inline Tensor masked_scatter(const Tensor & self, const Tensor & mask, const Tensor & source) {
@@ -3689,19 +3805,19 @@ static inline Tensor index_add(const Tensor & self, int64_t dim, const Tensor & 
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index, source);
 }
 static inline Tensor index_fill(const Tensor & self, int64_t dim, const Tensor & index, Scalar value) {
-    static auto table = globalATenDispatch().getOpTable("aten::index_fill(Tensor self, int dim, Tensor index, Scalar value) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::index_fill.Scalar(Tensor self, int dim, Tensor index, Scalar value) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index, value);
 }
 static inline Tensor index_fill(const Tensor & self, int64_t dim, const Tensor & index, const Tensor & value) {
-    static auto table = globalATenDispatch().getOpTable("aten::index_fill(Tensor self, int dim, Tensor index, Tensor value) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::index_fill.Tensor(Tensor self, int dim, Tensor index, Tensor value) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index, value);
 }
 static inline Tensor scatter(const Tensor & self, int64_t dim, const Tensor & index, const Tensor & src) {
-    static auto table = globalATenDispatch().getOpTable("aten::scatter(Tensor self, int dim, Tensor index, Tensor src) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::scatter.src(Tensor self, int dim, Tensor index, Tensor src) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index, src);
 }
 static inline Tensor scatter(const Tensor & self, int64_t dim, const Tensor & index, Scalar value) {
-    static auto table = globalATenDispatch().getOpTable("aten::scatter(Tensor self, int dim, Tensor index, Scalar value) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::scatter.value(Tensor self, int dim, Tensor index, Scalar value) -> Tensor");
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index, value);
 }
 static inline Tensor scatter_add(const Tensor & self, int64_t dim, const Tensor & index, const Tensor & src) {
@@ -3709,47 +3825,47 @@ static inline Tensor scatter_add(const Tensor & self, int64_t dim, const Tensor 
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index, src);
 }
 static inline Tensor __and__(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__and__(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__and__.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __and__(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__and__(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__and__.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __or__(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__or__(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__or__.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __or__(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__or__(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__or__.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __xor__(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__xor__(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__xor__.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __xor__(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__xor__(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__xor__.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __lshift__(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__lshift__(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__lshift__.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __lshift__(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__lshift__(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__lshift__.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __rshift__(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__rshift__(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__rshift__.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor __rshift__(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::__rshift__(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::__rshift__.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & addbmm_out(Tensor & out, const Tensor & self, const Tensor & batch1, const Tensor & batch2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::addbmm(Tensor self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::addbmm.out(Tensor self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, batch1, batch2, beta, alpha);
 }
 static inline Tensor addbmm(const Tensor & self, const Tensor & batch1, const Tensor & batch2, Scalar beta, Scalar alpha) {
@@ -3757,7 +3873,7 @@ static inline Tensor addbmm(const Tensor & self, const Tensor & batch1, const Te
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, batch1, batch2, beta, alpha);
 }
 static inline Tensor & diag_out(Tensor & out, const Tensor & self, int64_t diagonal) {
-    static auto table = globalATenDispatch().getOpTable("aten::diag(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::diag.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, diagonal);
 }
 static inline Tensor diag(const Tensor & self, int64_t diagonal) {
@@ -3765,7 +3881,7 @@ static inline Tensor diag(const Tensor & self, int64_t diagonal) {
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, diagonal);
 }
 static inline Tensor & cross_out(Tensor & out, const Tensor & self, const Tensor & other, c10::optional<int64_t> dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::cross(Tensor self, Tensor other, int? dim=None, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cross.out(Tensor self, Tensor other, int? dim=None, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other, dim);
 }
 static inline Tensor cross(const Tensor & self, const Tensor & other, c10::optional<int64_t> dim) {
@@ -3773,7 +3889,7 @@ static inline Tensor cross(const Tensor & self, const Tensor & other, c10::optio
     return table->getOp<Tensor (const Tensor &, const Tensor &, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, dim);
 }
 static inline Tensor & triu_out(Tensor & out, const Tensor & self, int64_t diagonal) {
-    static auto table = globalATenDispatch().getOpTable("aten::triu(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::triu.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, diagonal);
 }
 static inline Tensor triu(const Tensor & self, int64_t diagonal) {
@@ -3781,7 +3897,7 @@ static inline Tensor triu(const Tensor & self, int64_t diagonal) {
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, diagonal);
 }
 static inline Tensor & tril_out(Tensor & out, const Tensor & self, int64_t diagonal) {
-    static auto table = globalATenDispatch().getOpTable("aten::tril(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::tril.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, diagonal);
 }
 static inline Tensor tril(const Tensor & self, int64_t diagonal) {
@@ -3803,103 +3919,103 @@ static inline Tensor trace(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & ne_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ne(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ne.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor ne(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ne(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::ne.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & ne_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ne(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ne.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor ne(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ne(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::ne.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & eq_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::eq(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::eq.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor eq(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::eq(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::eq.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & eq_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::eq(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::eq.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor eq(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::eq(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::eq.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & ge_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ge(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ge.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor ge(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ge(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::ge.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & ge_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ge(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ge.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor ge(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::ge(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::ge.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & le_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::le(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::le.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor le(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::le(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::le.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & le_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::le(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::le.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor le(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::le(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::le.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & gt_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::gt(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::gt.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor gt(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::gt(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::gt.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & gt_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::gt(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::gt.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor gt(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::gt(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::gt.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & lt_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::lt(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::lt.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor lt(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::lt(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::lt.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & lt_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::lt(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::lt.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor lt(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::lt(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::lt.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & take_out(Tensor & out, const Tensor & self, const Tensor & index) {
-    static auto table = globalATenDispatch().getOpTable("aten::take(Tensor self, Tensor index, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::take.out(Tensor self, Tensor index, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, index);
 }
 static inline Tensor take(const Tensor & self, const Tensor & index) {
@@ -3907,7 +4023,7 @@ static inline Tensor take(const Tensor & self, const Tensor & index) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, index);
 }
 static inline Tensor & index_select_out(Tensor & out, const Tensor & self, int64_t dim, const Tensor & index) {
-    static auto table = globalATenDispatch().getOpTable("aten::index_select(Tensor self, int dim, Tensor index, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::index_select.out(Tensor self, int dim, Tensor index, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, index);
 }
 static inline Tensor index_select(const Tensor & self, int64_t dim, const Tensor & index) {
@@ -3915,7 +4031,7 @@ static inline Tensor index_select(const Tensor & self, int64_t dim, const Tensor
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index);
 }
 static inline Tensor & masked_select_out(Tensor & out, const Tensor & self, const Tensor & mask) {
-    static auto table = globalATenDispatch().getOpTable("aten::masked_select(Tensor self, Tensor mask, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::masked_select.out(Tensor self, Tensor mask, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mask);
 }
 static inline Tensor masked_select(const Tensor & self, const Tensor & mask) {
@@ -3923,7 +4039,7 @@ static inline Tensor masked_select(const Tensor & self, const Tensor & mask) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, mask);
 }
 static inline Tensor & nonzero_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::nonzero(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::nonzero.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor nonzero(const Tensor & self) {
@@ -3935,7 +4051,7 @@ static inline std::vector<Tensor> nonzero_numpy(const Tensor & self) {
     return table->getOp<std::vector<Tensor> (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & gather_out(Tensor & out, const Tensor & self, int64_t dim, const Tensor & index, bool sparse_grad) {
-    static auto table = globalATenDispatch().getOpTable("aten::gather(Tensor self, int dim, Tensor index, *, bool sparse_grad=False, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::gather.out(Tensor self, int dim, Tensor index, *, bool sparse_grad=False, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim, index, sparse_grad);
 }
 static inline Tensor gather(const Tensor & self, int64_t dim, const Tensor & index, bool sparse_grad) {
@@ -3947,7 +4063,7 @@ static inline Tensor _gather_sparse_backward(const Tensor & self, int64_t dim, c
     return table->getOp<Tensor (const Tensor &, int64_t, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, index, grad);
 }
 static inline Tensor & addcmul_out(Tensor & out, const Tensor & self, const Tensor & tensor1, const Tensor & tensor2, Scalar value) {
-    static auto table = globalATenDispatch().getOpTable("aten::addcmul(Tensor self, Tensor tensor1, Tensor tensor2, *, Scalar value=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::addcmul.out(Tensor self, Tensor tensor1, Tensor tensor2, *, Scalar value=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, tensor1, tensor2, value);
 }
 static inline Tensor addcmul(const Tensor & self, const Tensor & tensor1, const Tensor & tensor2, Scalar value) {
@@ -3955,23 +4071,23 @@ static inline Tensor addcmul(const Tensor & self, const Tensor & tensor1, const 
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, tensor1, tensor2, value);
 }
 static inline Tensor & addcdiv_out(Tensor & out, const Tensor & self, const Tensor & tensor1, const Tensor & tensor2, Scalar value) {
-    static auto table = globalATenDispatch().getOpTable("aten::addcdiv(Tensor self, Tensor tensor1, Tensor tensor2, *, Scalar value=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::addcdiv.out(Tensor self, Tensor tensor1, Tensor tensor2, *, Scalar value=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, tensor1, tensor2, value);
 }
 static inline Tensor addcdiv(const Tensor & self, const Tensor & tensor1, const Tensor & tensor2, Scalar value) {
     static auto table = globalATenDispatch().getOpTable("aten::addcdiv(Tensor self, Tensor tensor1, Tensor tensor2, *, Scalar value=1) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, tensor1, tensor2, value);
 }
-static inline std::tuple<Tensor &,Tensor &> gels_out(Tensor & X, Tensor & qr, const Tensor & self, const Tensor & A) {
-    static auto table = globalATenDispatch().getOpTable("aten::gels(Tensor self, Tensor A, *, Tensor(a!) X, Tensor(b!) qr) -> (Tensor(a!) solution, Tensor(b!) QR)");
+static inline std::tuple<Tensor &,Tensor &> lstsq_out(Tensor & X, Tensor & qr, const Tensor & self, const Tensor & A) {
+    static auto table = globalATenDispatch().getOpTable("aten::lstsq.X(Tensor self, Tensor A, *, Tensor(a!) X, Tensor(b!) qr) -> (Tensor(a!) solution, Tensor(b!) QR)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(X, qr, self, A);
 }
-static inline std::tuple<Tensor,Tensor> gels(const Tensor & self, const Tensor & A) {
-    static auto table = globalATenDispatch().getOpTable("aten::gels(Tensor self, Tensor A) -> (Tensor solution, Tensor QR)");
+static inline std::tuple<Tensor,Tensor> lstsq(const Tensor & self, const Tensor & A) {
+    static auto table = globalATenDispatch().getOpTable("aten::lstsq(Tensor self, Tensor A) -> (Tensor solution, Tensor QR)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, A);
 }
 static inline std::tuple<Tensor &,Tensor &> triangular_solve_out(Tensor & X, Tensor & M, const Tensor & self, const Tensor & A, bool upper, bool transpose, bool unitriangular) {
-    static auto table = globalATenDispatch().getOpTable("aten::triangular_solve(Tensor self, Tensor A, bool upper=True, bool transpose=False, bool unitriangular=False, *, Tensor(a!) X, Tensor(b!) M) -> (Tensor(a!) solution, Tensor(b!) cloned_coefficient)");
+    static auto table = globalATenDispatch().getOpTable("aten::triangular_solve.X(Tensor self, Tensor A, bool upper=True, bool transpose=False, bool unitriangular=False, *, Tensor(a!) X, Tensor(b!) M) -> (Tensor(a!) solution, Tensor(b!) cloned_coefficient)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, const Tensor &, bool, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(X, M, self, A, upper, transpose, unitriangular);
 }
 static inline std::tuple<Tensor,Tensor> triangular_solve(const Tensor & self, const Tensor & A, bool upper, bool transpose, bool unitriangular) {
@@ -3983,7 +4099,7 @@ static inline std::tuple<Tensor,Tensor> _triangular_solve_helper(const Tensor & 
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, bool, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, A, upper, transpose, unitriangular);
 }
 static inline std::tuple<Tensor &,Tensor &> symeig_out(Tensor & e, Tensor & V, const Tensor & self, bool eigenvectors, bool upper) {
-    static auto table = globalATenDispatch().getOpTable("aten::symeig(Tensor self, bool eigenvectors=False, bool upper=True, *, Tensor(a!) e, Tensor(b!) V) -> (Tensor(a!) eigenvalues, Tensor(b!) eigenvectors)");
+    static auto table = globalATenDispatch().getOpTable("aten::symeig.e(Tensor self, bool eigenvectors=False, bool upper=True, *, Tensor(a!) e, Tensor(b!) V) -> (Tensor(a!) eigenvalues, Tensor(b!) eigenvectors)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(e, V, self, eigenvectors, upper);
 }
 static inline std::tuple<Tensor,Tensor> symeig(const Tensor & self, bool eigenvectors, bool upper) {
@@ -3995,7 +4111,7 @@ static inline std::tuple<Tensor,Tensor> _symeig_helper(const Tensor & self, bool
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, eigenvectors, upper);
 }
 static inline std::tuple<Tensor &,Tensor &> eig_out(Tensor & e, Tensor & v, const Tensor & self, bool eigenvectors) {
-    static auto table = globalATenDispatch().getOpTable("aten::eig(Tensor self, bool eigenvectors=False, *, Tensor(a!) e, Tensor(b!) v) -> (Tensor(a!) eigenvalues, Tensor(b!) eigenvectors)");
+    static auto table = globalATenDispatch().getOpTable("aten::eig.e(Tensor self, bool eigenvectors=False, *, Tensor(a!) e, Tensor(b!) v) -> (Tensor(a!) eigenvalues, Tensor(b!) eigenvectors)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(e, v, self, eigenvectors);
 }
 static inline std::tuple<Tensor,Tensor> eig(const Tensor & self, bool eigenvectors) {
@@ -4003,15 +4119,19 @@ static inline std::tuple<Tensor,Tensor> eig(const Tensor & self, bool eigenvecto
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, eigenvectors);
 }
 static inline std::tuple<Tensor &,Tensor &,Tensor &> svd_out(Tensor & U, Tensor & S, Tensor & V, const Tensor & self, bool some, bool compute_uv) {
-    static auto table = globalATenDispatch().getOpTable("aten::svd(Tensor self, bool some=True, bool compute_uv=True, *, Tensor(a!) U, Tensor(b!) S, Tensor(c!) V) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) V)");
+    static auto table = globalATenDispatch().getOpTable("aten::svd.U(Tensor self, bool some=True, bool compute_uv=True, *, Tensor(a!) U, Tensor(b!) S, Tensor(c!) V) -> (Tensor(a!) U, Tensor(b!) S, Tensor(c!) V)");
     return table->getOp<std::tuple<Tensor &,Tensor &,Tensor &> (Tensor &, Tensor &, Tensor &, const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(U, S, V, self, some, compute_uv);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> svd(const Tensor & self, bool some, bool compute_uv) {
     static auto table = globalATenDispatch().getOpTable("aten::svd(Tensor self, bool some=True, bool compute_uv=True) -> (Tensor U, Tensor S, Tensor V)");
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, some, compute_uv);
 }
+static inline std::tuple<Tensor,Tensor,Tensor> _svd_helper(const Tensor & self, bool some, bool compute_uv) {
+    static auto table = globalATenDispatch().getOpTable("aten::_svd_helper(Tensor self, bool some, bool compute_uv) -> (Tensor, Tensor, Tensor)");
+    return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, some, compute_uv);
+}
 static inline Tensor & cholesky_out(Tensor & out, const Tensor & self, bool upper) {
-    static auto table = globalATenDispatch().getOpTable("aten::cholesky(Tensor self, bool upper=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cholesky.out(Tensor self, bool upper=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, upper);
 }
 static inline Tensor cholesky(const Tensor & self, bool upper) {
@@ -4023,7 +4143,7 @@ static inline Tensor _cholesky_helper(const Tensor & self, bool upper) {
     return table->getOp<Tensor (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, upper);
 }
 static inline Tensor & cholesky_solve_out(Tensor & out, const Tensor & self, const Tensor & input2, bool upper) {
-    static auto table = globalATenDispatch().getOpTable("aten::cholesky_solve(Tensor self, Tensor input2, bool upper=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cholesky_solve.out(Tensor self, Tensor input2, bool upper=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, input2, upper);
 }
 static inline Tensor cholesky_solve(const Tensor & self, const Tensor & input2, bool upper) {
@@ -4039,7 +4159,7 @@ static inline std::tuple<Tensor,Tensor> solve(const Tensor & self, const Tensor 
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, A);
 }
 static inline std::tuple<Tensor &,Tensor &> solve_out(Tensor & solution, Tensor & lu, const Tensor & self, const Tensor & A) {
-    static auto table = globalATenDispatch().getOpTable("aten::solve(Tensor self, Tensor A, *, Tensor(a!) solution, Tensor(b!) lu) -> (Tensor(a!) solution, Tensor(b!) LU)");
+    static auto table = globalATenDispatch().getOpTable("aten::solve.solution(Tensor self, Tensor A, *, Tensor(a!) solution, Tensor(b!) lu) -> (Tensor(a!) solution, Tensor(b!) LU)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(solution, lu, self, A);
 }
 static inline std::tuple<Tensor,Tensor> _solve_helper(const Tensor & self, const Tensor & A) {
@@ -4047,23 +4167,15 @@ static inline std::tuple<Tensor,Tensor> _solve_helper(const Tensor & self, const
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, A);
 }
 static inline Tensor & cholesky_inverse_out(Tensor & out, const Tensor & self, bool upper) {
-    static auto table = globalATenDispatch().getOpTable("aten::cholesky_inverse(Tensor self, bool upper=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::cholesky_inverse.out(Tensor self, bool upper=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, upper);
 }
 static inline Tensor cholesky_inverse(const Tensor & self, bool upper) {
     static auto table = globalATenDispatch().getOpTable("aten::cholesky_inverse(Tensor self, bool upper=False) -> Tensor");
     return table->getOp<Tensor (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, upper);
 }
-static inline std::tuple<Tensor &,Tensor &> pstrf_out(Tensor & u, Tensor & pivot, const Tensor & self, bool upper, Scalar tol) {
-    static auto table = globalATenDispatch().getOpTable("aten::pstrf(Tensor self, bool upper=True, Scalar tol=-1, *, Tensor(a!) u, Tensor(b!) pivot) -> (Tensor(a!) u, Tensor(b!) pivot)");
-    return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, bool, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(u, pivot, self, upper, tol);
-}
-static inline std::tuple<Tensor,Tensor> pstrf(const Tensor & self, bool upper, Scalar tol) {
-    static auto table = globalATenDispatch().getOpTable("aten::pstrf(Tensor self, bool upper=True, Scalar tol=-1) -> (Tensor u, Tensor pivot)");
-    return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, bool, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, upper, tol);
-}
 static inline std::tuple<Tensor &,Tensor &> qr_out(Tensor & Q, Tensor & R, const Tensor & self, bool some) {
-    static auto table = globalATenDispatch().getOpTable("aten::qr(Tensor self, bool some=True, *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)");
+    static auto table = globalATenDispatch().getOpTable("aten::qr.Q(Tensor self, bool some=True, *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(Q, R, self, some);
 }
 static inline std::tuple<Tensor,Tensor> qr(const Tensor & self, bool some) {
@@ -4075,7 +4187,7 @@ static inline std::tuple<Tensor,Tensor> _qr_helper(const Tensor & self, bool som
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, some);
 }
 static inline std::tuple<Tensor &,Tensor &> geqrf_out(Tensor & a, Tensor & tau, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::geqrf(Tensor self, *, Tensor(a!) a, Tensor(b!) tau) -> (Tensor(a!) a, Tensor(b!) tau)");
+    static auto table = globalATenDispatch().getOpTable("aten::geqrf.a(Tensor self, *, Tensor(a!) a, Tensor(b!) tau) -> (Tensor(a!) a, Tensor(b!) tau)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(a, tau, self);
 }
 static inline std::tuple<Tensor,Tensor> geqrf(const Tensor & self) {
@@ -4083,7 +4195,7 @@ static inline std::tuple<Tensor,Tensor> geqrf(const Tensor & self) {
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & orgqr_out(Tensor & out, const Tensor & self, const Tensor & input2) {
-    static auto table = globalATenDispatch().getOpTable("aten::orgqr(Tensor self, Tensor input2, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::orgqr.out(Tensor self, Tensor input2, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, input2);
 }
 static inline Tensor orgqr(const Tensor & self, const Tensor & input2) {
@@ -4091,7 +4203,7 @@ static inline Tensor orgqr(const Tensor & self, const Tensor & input2) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, input2);
 }
 static inline Tensor & ormqr_out(Tensor & out, const Tensor & self, const Tensor & input2, const Tensor & input3, bool left, bool transpose) {
-    static auto table = globalATenDispatch().getOpTable("aten::ormqr(Tensor self, Tensor input2, Tensor input3, bool left=True, bool transpose=False, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::ormqr.out(Tensor self, Tensor input2, Tensor input3, bool left=True, bool transpose=False, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, input2, input3, left, transpose);
 }
 static inline Tensor ormqr(const Tensor & self, const Tensor & input2, const Tensor & input3, bool left, bool transpose) {
@@ -4103,15 +4215,19 @@ static inline std::tuple<Tensor,Tensor,Tensor> _lu_with_info(const Tensor & self
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, pivot, check_errors);
 }
 static inline Tensor & lu_solve_out(Tensor & out, const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots) {
-    static auto table = globalATenDispatch().getOpTable("aten::lu_solve(Tensor self, Tensor LU_data, Tensor LU_pivots, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::lu_solve.out(Tensor self, Tensor LU_data, Tensor LU_pivots, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, LU_data, LU_pivots);
 }
 static inline Tensor lu_solve(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots) {
     static auto table = globalATenDispatch().getOpTable("aten::lu_solve(Tensor self, Tensor LU_data, Tensor LU_pivots) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, LU_data, LU_pivots);
 }
+static inline Tensor _lu_solve_helper(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots) {
+    static auto table = globalATenDispatch().getOpTable("aten::_lu_solve_helper(Tensor self, Tensor LU_data, Tensor LU_pivots) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, LU_data, LU_pivots);
+}
 static inline Tensor & multinomial_out(Tensor & out, const Tensor & self, int64_t num_samples, bool replacement, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::multinomial(Tensor self, int num_samples, bool replacement=False, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::multinomial.out(Tensor self, int num_samples, bool replacement=False, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, bool, Generator *)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, num_samples, replacement, generator);
 }
 static inline Tensor multinomial(const Tensor & self, int64_t num_samples, bool replacement, Generator * generator) {
@@ -4127,7 +4243,7 @@ static inline Tensor _multinomial_alias_draw(const Tensor & J, const Tensor & q,
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t, Generator *)>(at::detail::infer_backend(J), at::detail::infer_is_variable(J))(J, q, num_samples, generator);
 }
 static inline Tensor & lgamma_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::lgamma(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::lgamma.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor lgamma(const Tensor & self) {
@@ -4135,7 +4251,7 @@ static inline Tensor lgamma(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & digamma_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::digamma(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::digamma.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor digamma(const Tensor & self) {
@@ -4143,7 +4259,7 @@ static inline Tensor digamma(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & polygamma_out(Tensor & out, int64_t n, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::polygamma(int n, Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::polygamma.out(int n, Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, n, self);
 }
 static inline Tensor polygamma(int64_t n, const Tensor & self) {
@@ -4151,7 +4267,7 @@ static inline Tensor polygamma(int64_t n, const Tensor & self) {
     return table->getOp<Tensor (int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(n, self);
 }
 static inline Tensor & erfinv_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::erfinv(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::erfinv.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor erfinv(const Tensor & self) {
@@ -4163,7 +4279,7 @@ static inline Tensor dist(const Tensor & self, const Tensor & other, Scalar p) {
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other, p);
 }
 static inline Tensor & atan2_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::atan2(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::atan2.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor atan2(const Tensor & self, const Tensor & other) {
@@ -4171,23 +4287,23 @@ static inline Tensor atan2(const Tensor & self, const Tensor & other) {
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & lerp_out(Tensor & out, const Tensor & self, const Tensor & end, Scalar weight) {
-    static auto table = globalATenDispatch().getOpTable("aten::lerp(Tensor self, Tensor end, Scalar weight, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::lerp.Scalar_out(Tensor self, Tensor end, Scalar weight, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, end, weight);
 }
 static inline Tensor & lerp_out(Tensor & out, const Tensor & self, const Tensor & end, const Tensor & weight) {
-    static auto table = globalATenDispatch().getOpTable("aten::lerp(Tensor self, Tensor end, Tensor weight, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::lerp.Tensor_out(Tensor self, Tensor end, Tensor weight, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, end, weight);
 }
 static inline Tensor lerp(const Tensor & self, const Tensor & end, Scalar weight) {
-    static auto table = globalATenDispatch().getOpTable("aten::lerp(Tensor self, Tensor end, Scalar weight) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::lerp.Scalar(Tensor self, Tensor end, Scalar weight) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, end, weight);
 }
 static inline Tensor lerp(const Tensor & self, const Tensor & end, const Tensor & weight) {
-    static auto table = globalATenDispatch().getOpTable("aten::lerp(Tensor self, Tensor end, Tensor weight) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::lerp.Tensor(Tensor self, Tensor end, Tensor weight) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, end, weight);
 }
 static inline Tensor & histc_out(Tensor & out, const Tensor & self, int64_t bins, Scalar min, Scalar max) {
-    static auto table = globalATenDispatch().getOpTable("aten::histc(Tensor self, int bins=100, Scalar min=0, Scalar max=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::histc.out(Tensor self, int bins=100, Scalar min=0, Scalar max=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, bins, min, max);
 }
 static inline Tensor histc(const Tensor & self, int64_t bins, Scalar min, Scalar max) {
@@ -4195,7 +4311,7 @@ static inline Tensor histc(const Tensor & self, int64_t bins, Scalar min, Scalar
     return table->getOp<Tensor (const Tensor &, int64_t, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, bins, min, max);
 }
 static inline Tensor & sign_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::sign(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sign.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor sign(const Tensor & self) {
@@ -4203,43 +4319,43 @@ static inline Tensor sign(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & fmod_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::fmod(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::fmod.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor fmod(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::fmod(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::fmod.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & fmod_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::fmod(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::fmod.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor fmod(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::fmod(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::fmod.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & remainder_out(Tensor & out, const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::remainder(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::remainder.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor remainder(const Tensor & self, Scalar other) {
-    static auto table = globalATenDispatch().getOpTable("aten::remainder(Tensor self, Scalar other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::remainder.Scalar(Tensor self, Scalar other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & remainder_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::remainder(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::remainder.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor remainder(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::remainder(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::remainder.Tensor(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & min_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::min(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::min.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor min(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::min(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::min.other(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor min(const Tensor & self) {
@@ -4247,11 +4363,11 @@ static inline Tensor min(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & max_out(Tensor & out, const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::max(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::max.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, other);
 }
 static inline Tensor max(const Tensor & self, const Tensor & other) {
-    static auto table = globalATenDispatch().getOpTable("aten::max(Tensor self, Tensor other) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::max.other(Tensor self, Tensor other) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor max(const Tensor & self) {
@@ -4263,7 +4379,7 @@ static inline Tensor median(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline std::tuple<Tensor &,Tensor &> sort_out(Tensor & values, Tensor & indices, const Tensor & self, int64_t dim, bool descending) {
-    static auto table = globalATenDispatch().getOpTable("aten::sort(Tensor self, int dim=-1, bool descending=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::sort.values(Tensor self, int dim=-1, bool descending=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(values, indices, self, dim, descending);
 }
 static inline std::tuple<Tensor,Tensor> sort(const Tensor & self, int64_t dim, bool descending) {
@@ -4275,7 +4391,7 @@ static inline Tensor argsort(const Tensor & self, int64_t dim, bool descending) 
     return table->getOp<Tensor (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, descending);
 }
 static inline std::tuple<Tensor &,Tensor &> topk_out(Tensor & values, Tensor & indices, const Tensor & self, int64_t k, int64_t dim, bool largest, bool sorted) {
-    static auto table = globalATenDispatch().getOpTable("aten::topk(Tensor self, int k, int dim=-1, bool largest=True, bool sorted=True, *, Tensor(a!) values, Tensor(b!) indices) ->(Tensor(a!) values, Tensor(b!) indices)");
+    static auto table = globalATenDispatch().getOpTable("aten::topk.values(Tensor self, int k, int dim=-1, bool largest=True, bool sorted=True, *, Tensor(a!) values, Tensor(b!) indices) ->(Tensor(a!) values, Tensor(b!) indices)");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, int64_t, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(values, indices, self, k, dim, largest, sorted);
 }
 static inline std::tuple<Tensor,Tensor> topk(const Tensor & self, int64_t k, int64_t dim, bool largest, bool sorted) {
@@ -4291,7 +4407,7 @@ static inline Tensor any(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & renorm_out(Tensor & out, const Tensor & self, Scalar p, int64_t dim, Scalar maxnorm) {
-    static auto table = globalATenDispatch().getOpTable("aten::renorm(Tensor self, Scalar p, int dim, Scalar maxnorm, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::renorm.out(Tensor self, Scalar p, int dim, Scalar maxnorm, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar, int64_t, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, p, dim, maxnorm);
 }
 static inline Tensor renorm(const Tensor & self, Scalar p, int64_t dim, Scalar maxnorm) {
@@ -4303,44 +4419,53 @@ static inline bool equal(const Tensor & self, const Tensor & other) {
     return table->getOp<bool (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, other);
 }
 static inline Tensor & pow_out(Tensor & out, const Tensor & self, const Tensor & exponent) {
-    static auto table = globalATenDispatch().getOpTable("aten::pow(Tensor self, Tensor exponent, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::pow.Tensor_Tensor_out(Tensor self, Tensor exponent, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, exponent);
 }
 static inline Tensor pow(const Tensor & self, const Tensor & exponent) {
-    static auto table = globalATenDispatch().getOpTable("aten::pow(Tensor self, Tensor exponent) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::pow.Tensor_Tensor(Tensor self, Tensor exponent) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, exponent);
 }
 static inline Tensor & pow_out(Tensor & out, Scalar self, const Tensor & exponent) {
-    static auto table = globalATenDispatch().getOpTable("aten::pow(Scalar self, Tensor exponent, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::pow.Scalar_out(Scalar self, Tensor exponent, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, Scalar, const Tensor &)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, self, exponent);
 }
 static inline Tensor pow(Scalar self, const Tensor & exponent) {
-    static auto table = globalATenDispatch().getOpTable("aten::pow(Scalar self, Tensor exponent) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::pow.Scalar(Scalar self, Tensor exponent) -> Tensor");
     return table->getOp<Tensor (Scalar, const Tensor &)>(at::detail::infer_backend(exponent), at::detail::infer_is_variable(exponent))(self, exponent);
 }
 static inline Tensor & normal_out(Tensor & out, const Tensor & mean, double std, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::normal(Tensor mean, float std=1, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::normal.Tensor_float_out(Tensor mean, float std=1, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, double, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, mean, std, generator);
 }
 static inline Tensor normal(const Tensor & mean, double std, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::normal(Tensor mean, float std=1, *, Generator? generator=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::normal.Tensor_float(Tensor mean, float std=1, *, Generator? generator=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, double, Generator *)>(at::detail::infer_backend(mean), at::detail::infer_is_variable(mean))(mean, std, generator);
 }
 static inline Tensor & normal_out(Tensor & out, double mean, const Tensor & std, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::normal(float mean, Tensor std, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::normal.float_Tensor_out(float mean, Tensor std, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, double, const Tensor &, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, mean, std, generator);
 }
 static inline Tensor normal(double mean, const Tensor & std, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::normal(float mean, Tensor std, *, Generator? generator=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::normal.float_Tensor(float mean, Tensor std, *, Generator? generator=None) -> Tensor");
     return table->getOp<Tensor (double, const Tensor &, Generator *)>(at::detail::infer_backend(std), at::detail::infer_is_variable(std))(mean, std, generator);
 }
 static inline Tensor & normal_out(Tensor & out, const Tensor & mean, const Tensor & std, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::normal(Tensor mean, Tensor std, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::normal.Tensor_Tensor_out(Tensor mean, Tensor std, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, mean, std, generator);
 }
 static inline Tensor normal(const Tensor & mean, const Tensor & std, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::normal(Tensor mean, Tensor std, *, Generator? generator=None) -> Tensor");
+    static auto table = globalATenDispatch().getOpTable("aten::normal.Tensor_Tensor(Tensor mean, Tensor std, *, Generator? generator=None) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, Generator *)>(at::detail::infer_backend(mean), at::detail::infer_is_variable(mean))(mean, std, generator);
+}
+static inline Tensor normal(double mean, double std, IntArrayRef size, Generator * generator, const TensorOptions & options) {
+    globalLegacyTypeDispatch().initForBackend(options.backend());
+    static auto table = globalATenDispatch().getOpTable("aten::normal.float_float(float mean, float std, int[] size, *, Generator? generator=None, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor");
+    return table->getOp<Tensor (double, double, IntArrayRef, Generator *, const TensorOptions &)>(options.backend(), options.is_variable())(mean, std, size, generator, options);
+}
+static inline Tensor & normal_out(Tensor & out, double mean, double std, IntArrayRef size, Generator * generator) {
+    static auto table = globalATenDispatch().getOpTable("aten::normal.float_float_out(float mean, float std, int[] size, *, Generator? generator=None, Tensor(a!) out) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, double, double, IntArrayRef, Generator *)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, mean, std, size, generator);
 }
 static inline Tensor alias(const Tensor & self) {
     static auto table = globalATenDispatch().getOpTable("aten::alias(Tensor(a) self) -> Tensor(a)");
@@ -4355,7 +4480,7 @@ static inline Tensor & _addr_(Tensor & self, const Tensor & vec1, const Tensor &
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, vec1, vec2, beta, alpha);
 }
 static inline Tensor & _addr_out(Tensor & out, const Tensor & self, const Tensor & vec1, const Tensor & vec2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::_addr(Tensor self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_addr.out(Tensor self, Tensor vec1, Tensor vec2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, vec1, vec2, beta, alpha);
 }
 static inline Tensor & _index_copy_(Tensor & self, int64_t dim, const Tensor & index, const Tensor & source) {
@@ -4367,7 +4492,7 @@ static inline Tensor _cumsum(const Tensor & self, int64_t dim) {
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
 }
 static inline Tensor & _cumsum_out(Tensor & out, const Tensor & self, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::_cumsum(Tensor self, int dim, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_cumsum.out(Tensor self, int dim, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim);
 }
 static inline Tensor _cumprod(const Tensor & self, int64_t dim) {
@@ -4375,7 +4500,7 @@ static inline Tensor _cumprod(const Tensor & self, int64_t dim) {
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
 }
 static inline Tensor & _cumprod_out(Tensor & out, const Tensor & self, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::_cumprod(Tensor self, int dim, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_cumprod.out(Tensor self, int dim, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim);
 }
 static inline Tensor _var(const Tensor & self, bool unbiased) {
@@ -4387,7 +4512,7 @@ static inline Tensor _std(const Tensor & self, bool unbiased) {
     return table->getOp<Tensor (const Tensor &, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, unbiased);
 }
 static inline Tensor & _addmm_out(Tensor & out, const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
-    static auto table = globalATenDispatch().getOpTable("aten::_addmm(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_addmm.out(Tensor self, Tensor mat1, Tensor mat2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, mat1, mat2, beta, alpha);
 }
 static inline Tensor _addmm(const Tensor & self, const Tensor & mat1, const Tensor & mat2, Scalar beta, Scalar alpha) {
@@ -4403,7 +4528,7 @@ static inline Tensor _cat(TensorList tensors, int64_t dim) {
     return table->getOp<Tensor (TensorList, int64_t)>(at::detail::infer_backend(tensors), at::detail::infer_is_variable(tensors))(tensors, dim);
 }
 static inline Tensor & _cat_out(Tensor & out, TensorList tensors, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::_cat(Tensor[] tensors, int dim=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::_cat.out(Tensor[] tensors, int dim=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, TensorList, int64_t)>(at::detail::infer_backend(out), at::detail::infer_is_variable(out))(out, tensors, dim);
 }
 static inline std::tuple<Tensor,Tensor> _mode(const Tensor & self, int64_t dim, bool keepdim) {
@@ -4411,7 +4536,7 @@ static inline std::tuple<Tensor,Tensor> _mode(const Tensor & self, int64_t dim, 
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> _mode_out(Tensor & values, Tensor & indices, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::_mode(Tensor self, int dim=-1, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::_mode.values(Tensor self, int dim=-1, bool keepdim=False, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(values, indices, self, dim, keepdim);
 }
 static inline std::tuple<Tensor,Tensor> _max(const Tensor & self, int64_t dim, bool keepdim) {
@@ -4419,7 +4544,7 @@ static inline std::tuple<Tensor,Tensor> _max(const Tensor & self, int64_t dim, b
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> _max_out(Tensor & max, Tensor & max_indices, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::_max(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::_max.max(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(max, max_indices, self, dim, keepdim);
 }
 static inline std::tuple<Tensor,Tensor> _min(const Tensor & self, int64_t dim, bool keepdim) {
@@ -4427,11 +4552,11 @@ static inline std::tuple<Tensor,Tensor> _min(const Tensor & self, int64_t dim, b
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim, keepdim);
 }
 static inline std::tuple<Tensor &,Tensor &> _min_out(Tensor & min, Tensor & min_indices, const Tensor & self, int64_t dim, bool keepdim) {
-    static auto table = globalATenDispatch().getOpTable("aten::_min(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::_min.min(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, int64_t, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(min, min_indices, self, dim, keepdim);
 }
 static inline Tensor & binary_cross_entropy_out(Tensor & out, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::binary_cross_entropy(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::binary_cross_entropy.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, weight, reduction);
 }
 static inline Tensor binary_cross_entropy(const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction) {
@@ -4439,7 +4564,7 @@ static inline Tensor binary_cross_entropy(const Tensor & self, const Tensor & ta
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, weight, reduction);
 }
 static inline Tensor & binary_cross_entropy_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::binary_cross_entropy_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::binary_cross_entropy_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, weight, reduction);
 }
 static inline Tensor binary_cross_entropy_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction) {
@@ -4447,7 +4572,7 @@ static inline Tensor binary_cross_entropy_backward(const Tensor & grad_output, c
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, weight, reduction);
 }
 static inline Tensor & mse_loss_out(Tensor & out, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::mse_loss(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::mse_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, reduction);
 }
 static inline Tensor mse_loss(const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4455,7 +4580,7 @@ static inline Tensor mse_loss(const Tensor & self, const Tensor & target, int64_
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, reduction);
 }
 static inline Tensor & mse_loss_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::mse_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::mse_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, reduction);
 }
 static inline Tensor mse_loss_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4463,7 +4588,7 @@ static inline Tensor mse_loss_backward(const Tensor & grad_output, const Tensor 
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, reduction);
 }
 static inline Tensor & l1_loss_out(Tensor & out, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::l1_loss(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::l1_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, reduction);
 }
 static inline Tensor l1_loss(const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4471,7 +4596,7 @@ static inline Tensor l1_loss(const Tensor & self, const Tensor & target, int64_t
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, reduction);
 }
 static inline Tensor & l1_loss_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::l1_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, reduction);
 }
 static inline Tensor l1_loss_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4479,7 +4604,7 @@ static inline Tensor l1_loss_backward(const Tensor & grad_output, const Tensor &
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, reduction);
 }
 static inline Tensor & multi_margin_loss_out(Tensor & out, const Tensor & self, const Tensor & target, Scalar p, Scalar margin, const Tensor & weight, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::multi_margin_loss(Tensor self, Tensor target, Scalar p=1, Scalar margin=1, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::multi_margin_loss.out(Tensor self, Tensor target, Scalar p=1, Scalar margin=1, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar, Scalar, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, p, margin, weight, reduction);
 }
 static inline Tensor multi_margin_loss(const Tensor & self, const Tensor & target, Scalar p, Scalar margin, const Tensor & weight, int64_t reduction) {
@@ -4487,7 +4612,7 @@ static inline Tensor multi_margin_loss(const Tensor & self, const Tensor & targe
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar, Scalar, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, p, margin, weight, reduction);
 }
 static inline Tensor & multi_margin_loss_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, Scalar p, Scalar margin, const Tensor & weight, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::multi_margin_loss_backward(Tensor grad_output, Tensor self, Tensor target, Scalar p, Scalar margin, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::multi_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Scalar p, Scalar margin, Tensor? weight=None, int reduction=Mean, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, p, margin, weight, reduction);
 }
 static inline Tensor multi_margin_loss_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, Scalar p, Scalar margin, const Tensor & weight, int64_t reduction) {
@@ -4495,7 +4620,7 @@ static inline Tensor multi_margin_loss_backward(const Tensor & grad_output, cons
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, p, margin, weight, reduction);
 }
 static inline Tensor & multilabel_margin_loss_out(Tensor & out, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::multilabel_margin_loss(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::multilabel_margin_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, reduction);
 }
 static inline Tensor multilabel_margin_loss(const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4503,7 +4628,7 @@ static inline Tensor multilabel_margin_loss(const Tensor & self, const Tensor & 
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, reduction);
 }
 static inline std::tuple<Tensor &,Tensor &> multilabel_margin_loss_forward_out(Tensor & output, Tensor & is_target, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::multilabel_margin_loss_forward(Tensor self, Tensor target, int reduction, *, Tensor(a!) output, Tensor(b!) is_target) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::multilabel_margin_loss_forward.output(Tensor self, Tensor target, int reduction, *, Tensor(a!) output, Tensor(b!) is_target) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, is_target, self, target, reduction);
 }
 static inline std::tuple<Tensor,Tensor> multilabel_margin_loss_forward(const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4511,7 +4636,7 @@ static inline std::tuple<Tensor,Tensor> multilabel_margin_loss_forward(const Ten
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, reduction);
 }
 static inline Tensor & multilabel_margin_loss_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction, const Tensor & is_target) {
-    static auto table = globalATenDispatch().getOpTable("aten::multilabel_margin_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction, Tensor is_target, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::multilabel_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, Tensor is_target, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, reduction, is_target);
 }
 static inline Tensor multilabel_margin_loss_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction, const Tensor & is_target) {
@@ -4519,7 +4644,7 @@ static inline Tensor multilabel_margin_loss_backward(const Tensor & grad_output,
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, reduction, is_target);
 }
 static inline Tensor & nll_loss_out(Tensor & out, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
-    static auto table = globalATenDispatch().getOpTable("aten::nll_loss(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::nll_loss.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, weight, reduction, ignore_index);
 }
 static inline Tensor nll_loss(const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
@@ -4527,7 +4652,7 @@ static inline Tensor nll_loss(const Tensor & self, const Tensor & target, const 
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, weight, reduction, ignore_index);
 }
 static inline std::tuple<Tensor &,Tensor &> nll_loss_forward_out(Tensor & output, Tensor & total_weight, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
-    static auto table = globalATenDispatch().getOpTable("aten::nll_loss_forward(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::nll_loss_forward.output(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, total_weight, self, target, weight, reduction, ignore_index);
 }
 static inline std::tuple<Tensor,Tensor> nll_loss_forward(const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
@@ -4535,7 +4660,7 @@ static inline std::tuple<Tensor,Tensor> nll_loss_forward(const Tensor & self, co
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, weight, reduction, ignore_index);
 }
 static inline Tensor & nll_loss_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index, const Tensor & total_weight) {
-    static auto table = globalATenDispatch().getOpTable("aten::nll_loss_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::nll_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, weight, reduction, ignore_index, total_weight);
 }
 static inline Tensor nll_loss_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index, const Tensor & total_weight) {
@@ -4543,7 +4668,7 @@ static inline Tensor nll_loss_backward(const Tensor & grad_output, const Tensor 
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, weight, reduction, ignore_index, total_weight);
 }
 static inline Tensor & nll_loss2d_out(Tensor & out, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
-    static auto table = globalATenDispatch().getOpTable("aten::nll_loss2d(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::nll_loss2d.out(Tensor self, Tensor target, Tensor? weight=None, int reduction=Mean, int ignore_index=-100, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, weight, reduction, ignore_index);
 }
 static inline Tensor nll_loss2d(const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
@@ -4551,7 +4676,7 @@ static inline Tensor nll_loss2d(const Tensor & self, const Tensor & target, cons
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, weight, reduction, ignore_index);
 }
 static inline std::tuple<Tensor &,Tensor &> nll_loss2d_forward_out(Tensor & output, Tensor & total_weight, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
-    static auto table = globalATenDispatch().getOpTable("aten::nll_loss2d_forward(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::nll_loss2d_forward.output(Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, *, Tensor(a!) output, Tensor(b!) total_weight) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, total_weight, self, target, weight, reduction, ignore_index);
 }
 static inline std::tuple<Tensor,Tensor> nll_loss2d_forward(const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index) {
@@ -4559,7 +4684,7 @@ static inline std::tuple<Tensor,Tensor> nll_loss2d_forward(const Tensor & self, 
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, weight, reduction, ignore_index);
 }
 static inline Tensor & nll_loss2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index, const Tensor & total_weight) {
-    static auto table = globalATenDispatch().getOpTable("aten::nll_loss2d_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::nll_loss2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, Tensor? weight, int reduction, int ignore_index, Tensor total_weight, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, weight, reduction, ignore_index, total_weight);
 }
 static inline Tensor nll_loss2d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index, const Tensor & total_weight) {
@@ -4567,7 +4692,7 @@ static inline Tensor nll_loss2d_backward(const Tensor & grad_output, const Tenso
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t, int64_t, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, weight, reduction, ignore_index, total_weight);
 }
 static inline Tensor & smooth_l1_loss_out(Tensor & out, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::smooth_l1_loss(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::smooth_l1_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, reduction);
 }
 static inline Tensor smooth_l1_loss(const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4575,7 +4700,7 @@ static inline Tensor smooth_l1_loss(const Tensor & self, const Tensor & target, 
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, reduction);
 }
 static inline Tensor & smooth_l1_loss_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::smooth_l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::smooth_l1_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, reduction);
 }
 static inline Tensor smooth_l1_loss_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4583,7 +4708,7 @@ static inline Tensor smooth_l1_loss_backward(const Tensor & grad_output, const T
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, reduction);
 }
 static inline Tensor & soft_margin_loss_out(Tensor & out, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::soft_margin_loss(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::soft_margin_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, target, reduction);
 }
 static inline Tensor soft_margin_loss(const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4591,7 +4716,7 @@ static inline Tensor soft_margin_loss(const Tensor & self, const Tensor & target
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, target, reduction);
 }
 static inline Tensor & soft_margin_loss_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
-    static auto table = globalATenDispatch().getOpTable("aten::soft_margin_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::soft_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, target, reduction);
 }
 static inline Tensor soft_margin_loss_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, int64_t reduction) {
@@ -4599,7 +4724,7 @@ static inline Tensor soft_margin_loss_backward(const Tensor & grad_output, const
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, target, reduction);
 }
 static inline Tensor & elu_out(Tensor & out, const Tensor & self, Scalar alpha, Scalar scale, Scalar input_scale) {
-    static auto table = globalATenDispatch().getOpTable("aten::elu(Tensor self, Scalar alpha=1, Scalar scale=1, Scalar input_scale=1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::elu.out(Tensor self, Scalar alpha=1, Scalar scale=1, Scalar input_scale=1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, alpha, scale, input_scale);
 }
 static inline Tensor elu(const Tensor & self, Scalar alpha, Scalar scale, Scalar input_scale) {
@@ -4607,7 +4732,7 @@ static inline Tensor elu(const Tensor & self, Scalar alpha, Scalar scale, Scalar
     return table->getOp<Tensor (const Tensor &, Scalar, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, alpha, scale, input_scale);
 }
 static inline Tensor & elu_backward_out(Tensor & grad_input, const Tensor & grad_output, Scalar alpha, Scalar scale, Scalar input_scale, const Tensor & output) {
-    static auto table = globalATenDispatch().getOpTable("aten::elu_backward(Tensor grad_output, Scalar alpha, Scalar scale, Scalar input_scale, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::elu_backward.grad_input(Tensor grad_output, Scalar alpha, Scalar scale, Scalar input_scale, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar, Scalar, Scalar, const Tensor &)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, alpha, scale, input_scale, output);
 }
 static inline Tensor elu_backward(const Tensor & grad_output, Scalar alpha, Scalar scale, Scalar input_scale, const Tensor & output) {
@@ -4619,7 +4744,7 @@ static inline Tensor & elu_(Tensor & self, Scalar alpha, Scalar scale, Scalar in
     return table->getOp<Tensor & (Tensor &, Scalar, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, alpha, scale, input_scale);
 }
 static inline Tensor & glu_out(Tensor & out, const Tensor & self, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::glu(Tensor self, int dim=-1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::glu.out(Tensor self, int dim=-1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, dim);
 }
 static inline Tensor glu(const Tensor & self, int64_t dim) {
@@ -4627,7 +4752,7 @@ static inline Tensor glu(const Tensor & self, int64_t dim) {
     return table->getOp<Tensor (const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, dim);
 }
 static inline Tensor & glu_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, int64_t dim) {
-    static auto table = globalATenDispatch().getOpTable("aten::glu_backward(Tensor grad_output, Tensor self, int dim, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::glu_backward.grad_input(Tensor grad_output, Tensor self, int dim, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, dim);
 }
 static inline Tensor glu_backward(const Tensor & grad_output, const Tensor & self, int64_t dim) {
@@ -4635,7 +4760,7 @@ static inline Tensor glu_backward(const Tensor & grad_output, const Tensor & sel
     return table->getOp<Tensor (const Tensor &, const Tensor &, int64_t)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, dim);
 }
 static inline Tensor & hardtanh_out(Tensor & out, const Tensor & self, Scalar min_val, Scalar max_val) {
-    static auto table = globalATenDispatch().getOpTable("aten::hardtanh(Tensor self, Scalar min_val=-1, Scalar max_val=1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::hardtanh.out(Tensor self, Scalar min_val=-1, Scalar max_val=1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, min_val, max_val);
 }
 static inline Tensor hardtanh(const Tensor & self, Scalar min_val, Scalar max_val) {
@@ -4643,7 +4768,7 @@ static inline Tensor hardtanh(const Tensor & self, Scalar min_val, Scalar max_va
     return table->getOp<Tensor (const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, min_val, max_val);
 }
 static inline Tensor & hardtanh_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, Scalar min_val, Scalar max_val) {
-    static auto table = globalATenDispatch().getOpTable("aten::hardtanh_backward(Tensor grad_output, Tensor self, Scalar min_val, Scalar max_val, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::hardtanh_backward.grad_input(Tensor grad_output, Tensor self, Scalar min_val, Scalar max_val, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, min_val, max_val);
 }
 static inline Tensor hardtanh_backward(const Tensor & grad_output, const Tensor & self, Scalar min_val, Scalar max_val) {
@@ -4655,7 +4780,7 @@ static inline Tensor & hardtanh_(Tensor & self, Scalar min_val, Scalar max_val) 
     return table->getOp<Tensor & (Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, min_val, max_val);
 }
 static inline Tensor & leaky_relu_out(Tensor & out, const Tensor & self, Scalar negative_slope) {
-    static auto table = globalATenDispatch().getOpTable("aten::leaky_relu(Tensor self, Scalar negative_slope=0.01, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::leaky_relu.out(Tensor self, Scalar negative_slope=0.01, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, negative_slope);
 }
 static inline Tensor leaky_relu(const Tensor & self, Scalar negative_slope) {
@@ -4663,7 +4788,7 @@ static inline Tensor leaky_relu(const Tensor & self, Scalar negative_slope) {
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, negative_slope);
 }
 static inline Tensor & leaky_relu_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, Scalar negative_slope) {
-    static auto table = globalATenDispatch().getOpTable("aten::leaky_relu_backward(Tensor grad_output, Tensor self, Scalar negative_slope, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::leaky_relu_backward.grad_input(Tensor grad_output, Tensor self, Scalar negative_slope, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, negative_slope);
 }
 static inline Tensor leaky_relu_backward(const Tensor & grad_output, const Tensor & self, Scalar negative_slope) {
@@ -4675,7 +4800,7 @@ static inline Tensor & leaky_relu_(Tensor & self, Scalar negative_slope) {
     return table->getOp<Tensor & (Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, negative_slope);
 }
 static inline Tensor & log_sigmoid_out(Tensor & out, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::log_sigmoid(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::log_sigmoid.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self);
 }
 static inline Tensor log_sigmoid(const Tensor & self) {
@@ -4683,7 +4808,7 @@ static inline Tensor log_sigmoid(const Tensor & self) {
     return table->getOp<Tensor (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline std::tuple<Tensor &,Tensor &> log_sigmoid_forward_out(Tensor & output, Tensor & buffer, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::log_sigmoid_forward(Tensor self, *, Tensor(a!) output, Tensor(b!) buffer) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::log_sigmoid_forward.output(Tensor self, *, Tensor(a!) output, Tensor(b!) buffer) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, buffer, self);
 }
 static inline std::tuple<Tensor,Tensor> log_sigmoid_forward(const Tensor & self) {
@@ -4691,7 +4816,7 @@ static inline std::tuple<Tensor,Tensor> log_sigmoid_forward(const Tensor & self)
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self);
 }
 static inline Tensor & log_sigmoid_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & buffer) {
-    static auto table = globalATenDispatch().getOpTable("aten::log_sigmoid_backward(Tensor grad_output, Tensor self, Tensor buffer, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::log_sigmoid_backward.grad_input(Tensor grad_output, Tensor self, Tensor buffer, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, buffer);
 }
 static inline Tensor log_sigmoid_backward(const Tensor & grad_output, const Tensor & self, const Tensor & buffer) {
@@ -4699,7 +4824,7 @@ static inline Tensor log_sigmoid_backward(const Tensor & grad_output, const Tens
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, buffer);
 }
 static inline Tensor & rrelu_with_noise_out(Tensor & out, const Tensor & self, const Tensor & noise, Scalar lower, Scalar upper, bool training, Generator * generator) {
-    static auto table = globalATenDispatch().getOpTable("aten::rrelu_with_noise(Tensor self, Tensor noise, Scalar lower=0.125, Scalar upper=0.3333333333333333, bool training=False, Generator? generator=None, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::rrelu_with_noise.out(Tensor self, Tensor noise, Scalar lower=0.125, Scalar upper=0.3333333333333333, bool training=False, Generator? generator=None, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar, Scalar, bool, Generator *)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, noise, lower, upper, training, generator);
 }
 static inline Tensor rrelu_with_noise(const Tensor & self, const Tensor & noise, Scalar lower, Scalar upper, bool training, Generator * generator) {
@@ -4707,7 +4832,7 @@ static inline Tensor rrelu_with_noise(const Tensor & self, const Tensor & noise,
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar, Scalar, bool, Generator *)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, noise, lower, upper, training, generator);
 }
 static inline Tensor & rrelu_with_noise_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & noise, Scalar lower, Scalar upper, bool training) {
-    static auto table = globalATenDispatch().getOpTable("aten::rrelu_with_noise_backward(Tensor grad_output, Tensor self, Tensor noise, Scalar lower, Scalar upper, bool training, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::rrelu_with_noise_backward.grad_input(Tensor grad_output, Tensor self, Tensor noise, Scalar lower, Scalar upper, bool training, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, Scalar, Scalar, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, noise, lower, upper, training);
 }
 static inline Tensor rrelu_with_noise_backward(const Tensor & grad_output, const Tensor & self, const Tensor & noise, Scalar lower, Scalar upper, bool training) {
@@ -4719,7 +4844,7 @@ static inline Tensor & rrelu_with_noise_(Tensor & self, const Tensor & noise, Sc
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar, Scalar, bool, Generator *)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, noise, lower, upper, training, generator);
 }
 static inline Tensor & softplus_out(Tensor & out, const Tensor & self, Scalar beta, Scalar threshold) {
-    static auto table = globalATenDispatch().getOpTable("aten::softplus(Tensor self, Scalar beta=1, Scalar threshold=20, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::softplus.out(Tensor self, Scalar beta=1, Scalar threshold=20, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, beta, threshold);
 }
 static inline Tensor softplus(const Tensor & self, Scalar beta, Scalar threshold) {
@@ -4727,7 +4852,7 @@ static inline Tensor softplus(const Tensor & self, Scalar beta, Scalar threshold
     return table->getOp<Tensor (const Tensor &, Scalar, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, beta, threshold);
 }
 static inline Tensor & softplus_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, Scalar beta, Scalar threshold, const Tensor & output) {
-    static auto table = globalATenDispatch().getOpTable("aten::softplus_backward(Tensor grad_output, Tensor self, Scalar beta, Scalar threshold, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::softplus_backward.grad_input(Tensor grad_output, Tensor self, Scalar beta, Scalar threshold, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar, Scalar, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, beta, threshold, output);
 }
 static inline Tensor softplus_backward(const Tensor & grad_output, const Tensor & self, Scalar beta, Scalar threshold, const Tensor & output) {
@@ -4735,7 +4860,7 @@ static inline Tensor softplus_backward(const Tensor & grad_output, const Tensor 
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar, Scalar, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, beta, threshold, output);
 }
 static inline Tensor & softshrink_out(Tensor & out, const Tensor & self, Scalar lambd) {
-    static auto table = globalATenDispatch().getOpTable("aten::softshrink(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::softshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, lambd);
 }
 static inline Tensor softshrink(const Tensor & self, Scalar lambd) {
@@ -4743,7 +4868,7 @@ static inline Tensor softshrink(const Tensor & self, Scalar lambd) {
     return table->getOp<Tensor (const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, lambd);
 }
 static inline Tensor & softshrink_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, Scalar lambd) {
-    static auto table = globalATenDispatch().getOpTable("aten::softshrink_backward(Tensor grad_output, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::softshrink_backward.grad_input(Tensor grad_output, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, lambd);
 }
 static inline Tensor softshrink_backward(const Tensor & grad_output, const Tensor & self, Scalar lambd) {
@@ -4751,7 +4876,7 @@ static inline Tensor softshrink_backward(const Tensor & grad_output, const Tenso
     return table->getOp<Tensor (const Tensor &, const Tensor &, Scalar)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, lambd);
 }
 static inline Tensor & adaptive_avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::adaptive_avg_pool2d(Tensor self, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::adaptive_avg_pool2d.out(Tensor self, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size);
 }
 static inline Tensor adaptive_avg_pool2d(const Tensor & self, IntArrayRef output_size) {
@@ -4771,7 +4896,7 @@ static inline Tensor _adaptive_avg_pool2d_backward(const Tensor & grad_output, c
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self);
 }
 static inline Tensor & adaptive_avg_pool3d_out(Tensor & out, const Tensor & self, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::adaptive_avg_pool3d(Tensor self, int[3] output_size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::adaptive_avg_pool3d.out(Tensor self, int[3] output_size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size);
 }
 static inline Tensor adaptive_avg_pool3d(const Tensor & self, IntArrayRef output_size) {
@@ -4779,7 +4904,7 @@ static inline Tensor adaptive_avg_pool3d(const Tensor & self, IntArrayRef output
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size);
 }
 static inline Tensor & adaptive_avg_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self) {
-    static auto table = globalATenDispatch().getOpTable("aten::adaptive_avg_pool3d_backward(Tensor grad_output, Tensor self, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::adaptive_avg_pool3d_backward.grad_input(Tensor grad_output, Tensor self, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self);
 }
 static inline Tensor adaptive_avg_pool3d_backward(const Tensor & grad_output, const Tensor & self) {
@@ -4787,7 +4912,7 @@ static inline Tensor adaptive_avg_pool3d_backward(const Tensor & grad_output, co
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self);
 }
 static inline std::tuple<Tensor &,Tensor &> adaptive_max_pool2d_out(Tensor & out, Tensor & indices, const Tensor & self, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool2d(Tensor self, int[2] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool2d.out(Tensor self, int[2] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, indices, self, output_size);
 }
 static inline std::tuple<Tensor,Tensor> adaptive_max_pool2d(const Tensor & self, IntArrayRef output_size) {
@@ -4795,7 +4920,7 @@ static inline std::tuple<Tensor,Tensor> adaptive_max_pool2d(const Tensor & self,
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size);
 }
 static inline Tensor & adaptive_max_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & indices) {
-    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool2d_backward(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, indices);
 }
 static inline Tensor adaptive_max_pool2d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & indices) {
@@ -4803,7 +4928,7 @@ static inline Tensor adaptive_max_pool2d_backward(const Tensor & grad_output, co
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, indices);
 }
 static inline std::tuple<Tensor &,Tensor &> adaptive_max_pool3d_out(Tensor & out, Tensor & indices, const Tensor & self, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool3d(Tensor self, int[3] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool3d.out(Tensor self, int[3] output_size, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, indices, self, output_size);
 }
 static inline std::tuple<Tensor,Tensor> adaptive_max_pool3d(const Tensor & self, IntArrayRef output_size) {
@@ -4811,47 +4936,47 @@ static inline std::tuple<Tensor,Tensor> adaptive_max_pool3d(const Tensor & self,
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size);
 }
 static inline Tensor & adaptive_max_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & indices) {
-    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool3d_backward(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, indices);
 }
 static inline Tensor adaptive_max_pool3d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & indices) {
     static auto table = globalATenDispatch().getOpTable("aten::adaptive_max_pool3d_backward(Tensor grad_output, Tensor self, Tensor indices) -> Tensor");
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, indices);
 }
-static inline Tensor & avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True, *, Tensor(a!) out) -> Tensor(a!)");
-    return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor & avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d.out(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None, *, Tensor(a!) out) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
-static inline Tensor avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True) -> Tensor");
-    return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
-static inline Tensor & avg_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad, *, Tensor(a!) grad_input) -> Tensor(a!)");
-    return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor & avg_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d_backward.grad_input(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad, int? divisor_override, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
-static inline Tensor avg_pool2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad) -> Tensor");
-    return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor avg_pool2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool2d_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad, int? divisor_override) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
-static inline Tensor & avg_pool3d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, *, Tensor(a!) out) -> Tensor(a!)");
-    return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor & avg_pool3d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d.out(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None, *, Tensor(a!) out) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
-static inline Tensor avg_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True) -> Tensor");
-    return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor avg_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
-static inline Tensor & avg_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d_backward(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] stride, int[3] padding, bool ceil_mode, bool count_include_pad, *, Tensor(a!) grad_input) -> Tensor(a!)");
-    return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor & avg_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d_backward.grad_input(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] stride, int[3] padding, bool ceil_mode, bool count_include_pad, int? divisor_override, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
-static inline Tensor avg_pool3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) {
-    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d_backward(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] stride, int[3] padding, bool ceil_mode, bool count_include_pad) -> Tensor");
-    return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad);
+static inline Tensor avg_pool3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
+    static auto table = globalATenDispatch().getOpTable("aten::avg_pool3d_backward(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] stride, int[3] padding, bool ceil_mode, bool count_include_pad, int? divisor_override) -> Tensor");
+    return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, bool, bool, c10::optional<int64_t>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 }
 static inline std::tuple<Tensor &,Tensor &> fractional_max_pool2d_out(Tensor & output, Tensor & indices, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples) {
-    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool2d(Tensor self, int[2] kernel_size, int[2] output_size, Tensor random_samples, *, Tensor(a!) output, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool2d.output(Tensor self, int[2] kernel_size, int[2] output_size, Tensor random_samples, *, Tensor(a!) output, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, indices, self, kernel_size, output_size, random_samples);
 }
 static inline std::tuple<Tensor,Tensor> fractional_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples) {
@@ -4859,7 +4984,7 @@ static inline std::tuple<Tensor,Tensor> fractional_max_pool2d(const Tensor & sel
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, output_size, random_samples);
 }
 static inline Tensor & fractional_max_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & indices) {
-    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool2d_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] output_size, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool2d_backward.grad_input(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] output_size, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, output_size, indices);
 }
 static inline Tensor fractional_max_pool2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & indices) {
@@ -4867,7 +4992,7 @@ static inline Tensor fractional_max_pool2d_backward(const Tensor & grad_output, 
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, output_size, indices);
 }
 static inline std::tuple<Tensor &,Tensor &> fractional_max_pool3d_out(Tensor & output, Tensor & indices, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples) {
-    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool3d(Tensor self, int[3] kernel_size, int[3] output_size, Tensor random_samples, *, Tensor(a!) output, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool3d.output(Tensor self, int[3] kernel_size, int[3] output_size, Tensor random_samples, *, Tensor(a!) output, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, indices, self, kernel_size, output_size, random_samples);
 }
 static inline std::tuple<Tensor,Tensor> fractional_max_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & random_samples) {
@@ -4875,7 +5000,7 @@ static inline std::tuple<Tensor,Tensor> fractional_max_pool3d(const Tensor & sel
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, output_size, random_samples);
 }
 static inline Tensor & fractional_max_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & indices) {
-    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool3d_backward(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] output_size, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::fractional_max_pool3d_backward.grad_input(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] output_size, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, output_size, indices);
 }
 static inline Tensor fractional_max_pool3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef output_size, const Tensor & indices) {
@@ -4883,7 +5008,7 @@ static inline Tensor fractional_max_pool3d_backward(const Tensor & grad_output, 
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, output_size, indices);
 }
 static inline std::tuple<Tensor &,Tensor &> max_pool2d_with_indices_out(Tensor & out, Tensor & indices, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_pool2d_with_indices(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::max_pool2d_with_indices.out(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, indices, self, kernel_size, stride, padding, dilation, ceil_mode);
 }
 static inline std::tuple<Tensor,Tensor> max_pool2d_with_indices(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode) {
@@ -4891,7 +5016,7 @@ static inline std::tuple<Tensor,Tensor> max_pool2d_with_indices(const Tensor & s
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, dilation, ceil_mode);
 }
 static inline Tensor & max_pool2d_with_indices_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode, const Tensor & indices) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_pool2d_with_indices_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool ceil_mode, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::max_pool2d_with_indices_backward.grad_input(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool ceil_mode, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, stride, padding, dilation, ceil_mode, indices);
 }
 static inline Tensor max_pool2d_with_indices_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode, const Tensor & indices) {
@@ -4899,7 +5024,7 @@ static inline Tensor max_pool2d_with_indices_backward(const Tensor & grad_output
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, stride, padding, dilation, ceil_mode, indices);
 }
 static inline std::tuple<Tensor &,Tensor &> max_pool3d_with_indices_out(Tensor & out, Tensor & indices, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_pool3d_with_indices(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, int[3] dilation=1, bool ceil_mode=False, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::max_pool3d_with_indices.out(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, int[3] dilation=1, bool ceil_mode=False, *, Tensor(a!) out, Tensor(b!) indices) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, indices, self, kernel_size, stride, padding, dilation, ceil_mode);
 }
 static inline std::tuple<Tensor,Tensor> max_pool3d_with_indices(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode) {
@@ -4907,7 +5032,7 @@ static inline std::tuple<Tensor,Tensor> max_pool3d_with_indices(const Tensor & s
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, stride, padding, dilation, ceil_mode);
 }
 static inline Tensor & max_pool3d_with_indices_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode, const Tensor & indices) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_pool3d_with_indices_backward(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] stride, int[3] padding, int[3] dilation, bool ceil_mode, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::max_pool3d_with_indices_backward.grad_input(Tensor grad_output, Tensor self, int[3] kernel_size, int[3] stride, int[3] padding, int[3] dilation, bool ceil_mode, Tensor indices, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, kernel_size, stride, padding, dilation, ceil_mode, indices);
 }
 static inline Tensor max_pool3d_with_indices_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, bool ceil_mode, const Tensor & indices) {
@@ -4915,7 +5040,7 @@ static inline Tensor max_pool3d_with_indices_backward(const Tensor & grad_output
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, bool, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, kernel_size, stride, padding, dilation, ceil_mode, indices);
 }
 static inline Tensor & max_unpool2d_out(Tensor & out, const Tensor & self, const Tensor & indices, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_unpool2d(Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::max_unpool2d.out(Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, indices, output_size);
 }
 static inline Tensor max_unpool2d(const Tensor & self, const Tensor & indices, IntArrayRef output_size) {
@@ -4923,7 +5048,7 @@ static inline Tensor max_unpool2d(const Tensor & self, const Tensor & indices, I
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, indices, output_size);
 }
 static inline Tensor & max_unpool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & indices, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_unpool2d_backward(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::max_unpool2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, indices, output_size);
 }
 static inline Tensor max_unpool2d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & indices, IntArrayRef output_size) {
@@ -4931,7 +5056,7 @@ static inline Tensor max_unpool2d_backward(const Tensor & grad_output, const Ten
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, indices, output_size);
 }
 static inline Tensor & max_unpool3d_out(Tensor & out, const Tensor & self, const Tensor & indices, IntArrayRef output_size, IntArrayRef stride, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_unpool3d(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::max_unpool3d.out(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, indices, output_size, stride, padding);
 }
 static inline Tensor max_unpool3d(const Tensor & self, const Tensor & indices, IntArrayRef output_size, IntArrayRef stride, IntArrayRef padding) {
@@ -4939,7 +5064,7 @@ static inline Tensor max_unpool3d(const Tensor & self, const Tensor & indices, I
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, indices, output_size, stride, padding);
 }
 static inline Tensor & max_unpool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, const Tensor & indices, IntArrayRef output_size, IntArrayRef stride, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::max_unpool3d_backward(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::max_unpool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, indices, output_size, stride, padding);
 }
 static inline Tensor max_unpool3d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & indices, IntArrayRef output_size, IntArrayRef stride, IntArrayRef padding) {
@@ -4947,7 +5072,7 @@ static inline Tensor max_unpool3d_backward(const Tensor & grad_output, const Ten
     return table->getOp<Tensor (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, indices, output_size, stride, padding);
 }
 static inline Tensor & reflection_pad1d_out(Tensor & out, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad1d(Tensor self, int[2] padding, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad1d.out(Tensor self, int[2] padding, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, padding);
 }
 static inline Tensor reflection_pad1d(const Tensor & self, IntArrayRef padding) {
@@ -4955,7 +5080,7 @@ static inline Tensor reflection_pad1d(const Tensor & self, IntArrayRef padding) 
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, padding);
 }
 static inline Tensor & reflection_pad1d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad1d_backward(Tensor grad_output, Tensor self, int[2] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad1d_backward.grad_input(Tensor grad_output, Tensor self, int[2] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, padding);
 }
 static inline Tensor reflection_pad1d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
@@ -4963,7 +5088,7 @@ static inline Tensor reflection_pad1d_backward(const Tensor & grad_output, const
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, padding);
 }
 static inline Tensor & reflection_pad2d_out(Tensor & out, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad2d(Tensor self, int[4] padding, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad2d.out(Tensor self, int[4] padding, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, padding);
 }
 static inline Tensor reflection_pad2d(const Tensor & self, IntArrayRef padding) {
@@ -4971,7 +5096,7 @@ static inline Tensor reflection_pad2d(const Tensor & self, IntArrayRef padding) 
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, padding);
 }
 static inline Tensor & reflection_pad2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad2d_backward(Tensor grad_output, Tensor self, int[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::reflection_pad2d_backward.grad_input(Tensor grad_output, Tensor self, int[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, padding);
 }
 static inline Tensor reflection_pad2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
@@ -4979,7 +5104,7 @@ static inline Tensor reflection_pad2d_backward(const Tensor & grad_output, const
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, padding);
 }
 static inline Tensor & replication_pad1d_out(Tensor & out, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::replication_pad1d(Tensor self, int[2] padding, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::replication_pad1d.out(Tensor self, int[2] padding, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, padding);
 }
 static inline Tensor replication_pad1d(const Tensor & self, IntArrayRef padding) {
@@ -4987,7 +5112,7 @@ static inline Tensor replication_pad1d(const Tensor & self, IntArrayRef padding)
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, padding);
 }
 static inline Tensor & replication_pad1d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::replication_pad1d_backward(Tensor grad_output, Tensor self, int[2] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::replication_pad1d_backward.grad_input(Tensor grad_output, Tensor self, int[2] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, padding);
 }
 static inline Tensor replication_pad1d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
@@ -4995,7 +5120,7 @@ static inline Tensor replication_pad1d_backward(const Tensor & grad_output, cons
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, padding);
 }
 static inline Tensor & replication_pad2d_out(Tensor & out, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::replication_pad2d(Tensor self, int[4] padding, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::replication_pad2d.out(Tensor self, int[4] padding, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, padding);
 }
 static inline Tensor replication_pad2d(const Tensor & self, IntArrayRef padding) {
@@ -5003,7 +5128,7 @@ static inline Tensor replication_pad2d(const Tensor & self, IntArrayRef padding)
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, padding);
 }
 static inline Tensor & replication_pad2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::replication_pad2d_backward(Tensor grad_output, Tensor self, int[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::replication_pad2d_backward.grad_input(Tensor grad_output, Tensor self, int[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, padding);
 }
 static inline Tensor replication_pad2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
@@ -5011,7 +5136,7 @@ static inline Tensor replication_pad2d_backward(const Tensor & grad_output, cons
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, padding);
 }
 static inline Tensor & replication_pad3d_out(Tensor & out, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::replication_pad3d(Tensor self, int[6] padding, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::replication_pad3d.out(Tensor self, int[6] padding, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, padding);
 }
 static inline Tensor replication_pad3d(const Tensor & self, IntArrayRef padding) {
@@ -5019,7 +5144,7 @@ static inline Tensor replication_pad3d(const Tensor & self, IntArrayRef padding)
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, padding);
 }
 static inline Tensor & replication_pad3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::replication_pad3d_backward(Tensor grad_output, Tensor self, int[6] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::replication_pad3d_backward.grad_input(Tensor grad_output, Tensor self, int[6] padding, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_output, self, padding);
 }
 static inline Tensor replication_pad3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef padding) {
@@ -5027,7 +5152,7 @@ static inline Tensor replication_pad3d_backward(const Tensor & grad_output, cons
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, padding);
 }
 static inline Tensor & upsample_linear1d_out(Tensor & out, const Tensor & self, IntArrayRef output_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_linear1d(Tensor self, int[1] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_linear1d.out(Tensor self, int[1] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size, align_corners);
 }
 static inline Tensor upsample_linear1d(const Tensor & self, IntArrayRef output_size, bool align_corners) {
@@ -5035,7 +5160,7 @@ static inline Tensor upsample_linear1d(const Tensor & self, IntArrayRef output_s
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size, align_corners);
 }
 static inline Tensor & upsample_linear1d_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_linear1d_backward(Tensor grad_output, int[1] output_size, int[3] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_linear1d_backward.grad_input(Tensor grad_output, int[1] output_size, int[3] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor upsample_linear1d_backward(const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
@@ -5043,7 +5168,7 @@ static inline Tensor upsample_linear1d_backward(const Tensor & grad_output, IntA
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor & upsample_bilinear2d_out(Tensor & out, const Tensor & self, IntArrayRef output_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_bilinear2d(Tensor self, int[2] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_bilinear2d.out(Tensor self, int[2] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size, align_corners);
 }
 static inline Tensor upsample_bilinear2d(const Tensor & self, IntArrayRef output_size, bool align_corners) {
@@ -5051,7 +5176,7 @@ static inline Tensor upsample_bilinear2d(const Tensor & self, IntArrayRef output
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size, align_corners);
 }
 static inline Tensor & upsample_bilinear2d_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_bilinear2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_bilinear2d_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor upsample_bilinear2d_backward(const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
@@ -5059,7 +5184,7 @@ static inline Tensor upsample_bilinear2d_backward(const Tensor & grad_output, In
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor & upsample_bicubic2d_out(Tensor & out, const Tensor & self, IntArrayRef output_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_bicubic2d(Tensor self, int[2] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_bicubic2d.out(Tensor self, int[2] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size, align_corners);
 }
 static inline Tensor upsample_bicubic2d(const Tensor & self, IntArrayRef output_size, bool align_corners) {
@@ -5067,7 +5192,7 @@ static inline Tensor upsample_bicubic2d(const Tensor & self, IntArrayRef output_
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size, align_corners);
 }
 static inline Tensor & upsample_bicubic2d_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_bicubic2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_bicubic2d_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor upsample_bicubic2d_backward(const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
@@ -5075,7 +5200,7 @@ static inline Tensor upsample_bicubic2d_backward(const Tensor & grad_output, Int
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor & upsample_trilinear3d_out(Tensor & out, const Tensor & self, IntArrayRef output_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_trilinear3d(Tensor self, int[3] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_trilinear3d.out(Tensor self, int[3] output_size, bool align_corners, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size, align_corners);
 }
 static inline Tensor upsample_trilinear3d(const Tensor & self, IntArrayRef output_size, bool align_corners) {
@@ -5083,7 +5208,7 @@ static inline Tensor upsample_trilinear3d(const Tensor & self, IntArrayRef outpu
     return table->getOp<Tensor (const Tensor &, IntArrayRef, bool)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size, align_corners);
 }
 static inline Tensor & upsample_trilinear3d_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_trilinear3d_backward(Tensor grad_output, int[3] output_size, int[5] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_trilinear3d_backward.grad_input(Tensor grad_output, int[3] output_size, int[5] input_size, bool align_corners, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor upsample_trilinear3d_backward(const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size, bool align_corners) {
@@ -5091,7 +5216,7 @@ static inline Tensor upsample_trilinear3d_backward(const Tensor & grad_output, I
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, bool)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output_size, input_size, align_corners);
 }
 static inline Tensor & upsample_nearest1d_out(Tensor & out, const Tensor & self, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest1d(Tensor self, int[1] output_size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest1d.out(Tensor self, int[1] output_size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size);
 }
 static inline Tensor upsample_nearest1d(const Tensor & self, IntArrayRef output_size) {
@@ -5099,7 +5224,7 @@ static inline Tensor upsample_nearest1d(const Tensor & self, IntArrayRef output_
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size);
 }
 static inline Tensor & upsample_nearest1d_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest1d_backward(Tensor grad_output, int[1] output_size, int[3] input_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest1d_backward.grad_input(Tensor grad_output, int[1] output_size, int[3] input_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output_size, input_size);
 }
 static inline Tensor upsample_nearest1d_backward(const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size) {
@@ -5107,7 +5232,7 @@ static inline Tensor upsample_nearest1d_backward(const Tensor & grad_output, Int
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output_size, input_size);
 }
 static inline Tensor & upsample_nearest2d_out(Tensor & out, const Tensor & self, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest2d(Tensor self, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest2d.out(Tensor self, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size);
 }
 static inline Tensor upsample_nearest2d(const Tensor & self, IntArrayRef output_size) {
@@ -5115,7 +5240,7 @@ static inline Tensor upsample_nearest2d(const Tensor & self, IntArrayRef output_
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size);
 }
 static inline Tensor & upsample_nearest2d_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest2d_backward(Tensor grad_output, int[2] output_size, int[4] input_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest2d_backward.grad_input(Tensor grad_output, int[2] output_size, int[4] input_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output_size, input_size);
 }
 static inline Tensor upsample_nearest2d_backward(const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size) {
@@ -5123,7 +5248,7 @@ static inline Tensor upsample_nearest2d_backward(const Tensor & grad_output, Int
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output_size, input_size);
 }
 static inline Tensor & upsample_nearest3d_out(Tensor & out, const Tensor & self, IntArrayRef output_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest3d(Tensor self, int[3] output_size, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest3d.out(Tensor self, int[3] output_size, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size);
 }
 static inline Tensor upsample_nearest3d(const Tensor & self, IntArrayRef output_size) {
@@ -5131,7 +5256,7 @@ static inline Tensor upsample_nearest3d(const Tensor & self, IntArrayRef output_
     return table->getOp<Tensor (const Tensor &, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size);
 }
 static inline Tensor & upsample_nearest3d_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size) {
-    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest3d_backward(Tensor grad_output, int[3] output_size, int[5] input_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::upsample_nearest3d_backward.grad_input(Tensor grad_output, int[3] output_size, int[5] input_size, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output_size, input_size);
 }
 static inline Tensor upsample_nearest3d_backward(const Tensor & grad_output, IntArrayRef output_size, IntArrayRef input_size) {
@@ -5139,7 +5264,7 @@ static inline Tensor upsample_nearest3d_backward(const Tensor & grad_output, Int
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output_size, input_size);
 }
 static inline Tensor & sigmoid_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & output) {
-    static auto table = globalATenDispatch().getOpTable("aten::sigmoid_backward(Tensor grad_output, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::sigmoid_backward.grad_input(Tensor grad_output, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output);
 }
 static inline Tensor sigmoid_backward(const Tensor & grad_output, const Tensor & output) {
@@ -5147,7 +5272,7 @@ static inline Tensor sigmoid_backward(const Tensor & grad_output, const Tensor &
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output);
 }
 static inline Tensor & tanh_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & output) {
-    static auto table = globalATenDispatch().getOpTable("aten::tanh_backward(Tensor grad_output, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::tanh_backward.grad_input(Tensor grad_output, Tensor output, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, output);
 }
 static inline Tensor tanh_backward(const Tensor & grad_output, const Tensor & output) {
@@ -5155,7 +5280,7 @@ static inline Tensor tanh_backward(const Tensor & grad_output, const Tensor & ou
     return table->getOp<Tensor (const Tensor &, const Tensor &)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, output);
 }
 static inline Tensor & conv_transpose2d_out(Tensor & out, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] output_padding=0, int[2] dilation=1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] output_padding=0, int[2] dilation=1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
 }
 static inline Tensor conv_transpose2d(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation) {
@@ -5163,15 +5288,15 @@ static inline Tensor conv_transpose2d(const Tensor & self, const Tensor & weight
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
 }
 static inline std::tuple<Tensor &,Tensor &,Tensor &> conv_transpose2d_backward_out(Tensor & grad_input, Tensor & grad_weight, Tensor & grad_bias, const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation, const Tensor & columns, const Tensor & ones) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] output_padding, int[2] dilation, Tensor columns, Tensor ones, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d_backward.grad_output(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] output_padding, int[2] dilation, Tensor columns, Tensor ones, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
     return table->getOp<std::tuple<Tensor &,Tensor &,Tensor &> (Tensor &, Tensor &, Tensor &, const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_weight, grad_bias, grad_output, self, weight, kernel_size, stride, padding, output_padding, dilation, columns, ones);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> conv_transpose2d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation, const Tensor & columns, const Tensor & ones, std::array<bool,3> output_mask) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] output_padding, int[2] dilation, Tensor columns, Tensor ones, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose2d_backward.output_mask(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] output_padding, int[2] dilation, Tensor columns, Tensor ones, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &, std::array<bool,3>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, weight, kernel_size, stride, padding, output_padding, dilation, columns, ones, output_mask);
 }
 static inline Tensor & conv_transpose3d_out(Tensor & out, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0, int[3] output_padding=0, int[3] dilation=1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d.out(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0, int[3] output_padding=0, int[3] dilation=1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
 }
 static inline Tensor conv_transpose3d(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation) {
@@ -5179,15 +5304,15 @@ static inline Tensor conv_transpose3d(const Tensor & self, const Tensor & weight
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding, output_padding, dilation);
 }
 static inline std::tuple<Tensor &,Tensor &,Tensor &> conv_transpose3d_backward_out(Tensor & grad_input, Tensor & grad_weight, Tensor & grad_bias, const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation, const Tensor & finput, const Tensor & fgrad_input) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d_backward(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, int[3] output_padding, int[3] dilation, Tensor finput, Tensor fgrad_input, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d_backward.grad_output(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, int[3] output_padding, int[3] dilation, Tensor finput, Tensor fgrad_input, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
     return table->getOp<std::tuple<Tensor &,Tensor &,Tensor &> (Tensor &, Tensor &, Tensor &, const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_weight, grad_bias, grad_output, self, weight, kernel_size, stride, padding, output_padding, dilation, finput, fgrad_input);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> conv_transpose3d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef output_padding, IntArrayRef dilation, const Tensor & finput, const Tensor & fgrad_input, std::array<bool,3> output_mask) {
-    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d_backward(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, int[3] output_padding, int[3] dilation, Tensor finput, Tensor fgrad_input, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
+    static auto table = globalATenDispatch().getOpTable("aten::conv_transpose3d_backward.output_mask(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, int[3] output_padding, int[3] dilation, Tensor finput, Tensor fgrad_input, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &, std::array<bool,3>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, weight, kernel_size, stride, padding, output_padding, dilation, finput, fgrad_input, output_mask);
 }
 static inline Tensor & thnn_conv2d_out(Tensor & out, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, weight, kernel_size, bias, stride, padding);
 }
 static inline Tensor thnn_conv2d(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
@@ -5195,7 +5320,7 @@ static inline Tensor thnn_conv2d(const Tensor & self, const Tensor & weight, Int
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding);
 }
 static inline std::tuple<Tensor &,Tensor &,Tensor &> thnn_conv2d_forward_out(Tensor & output, Tensor & finput, Tensor & fgrad_input, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d_forward(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, *, Tensor(a!) output, Tensor(b!) finput, Tensor(c!) fgrad_input) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d_forward.output(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, *, Tensor(a!) output, Tensor(b!) finput, Tensor(c!) fgrad_input) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
     return table->getOp<std::tuple<Tensor &,Tensor &,Tensor &> (Tensor &, Tensor &, Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, finput, fgrad_input, self, weight, kernel_size, bias, stride, padding);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> thnn_conv2d_forward(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
@@ -5203,15 +5328,15 @@ static inline std::tuple<Tensor,Tensor,Tensor> thnn_conv2d_forward(const Tensor 
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding);
 }
 static inline std::tuple<Tensor &,Tensor &,Tensor &> thnn_conv2d_backward_out(Tensor & grad_input, Tensor & grad_weight, Tensor & grad_bias, const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, const Tensor & finput, const Tensor & fgrad_input) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, Tensor finput, Tensor fgrad_input, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, Tensor finput, Tensor fgrad_input, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
     return table->getOp<std::tuple<Tensor &,Tensor &,Tensor &> (Tensor &, Tensor &, Tensor &, const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_weight, grad_bias, grad_output, self, weight, kernel_size, stride, padding, finput, fgrad_input);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> thnn_conv2d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, const Tensor & finput, const Tensor & fgrad_input, std::array<bool,3> output_mask) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, Tensor finput, Tensor fgrad_input, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv2d_backward.output_mask(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, Tensor finput, Tensor fgrad_input, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &, std::array<bool,3>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, weight, kernel_size, stride, padding, finput, fgrad_input, output_mask);
 }
 static inline Tensor & thnn_conv_depthwise2d_out(Tensor & out, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] dilation=1, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias=None, int[2] stride=1, int[2] padding=0, int[2] dilation=1, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, weight, kernel_size, bias, stride, padding, dilation);
 }
 static inline Tensor thnn_conv_depthwise2d(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) {
@@ -5219,7 +5344,7 @@ static inline Tensor thnn_conv_depthwise2d(const Tensor & self, const Tensor & w
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding, dilation);
 }
 static inline Tensor & thnn_conv_depthwise2d_forward_out(Tensor & out, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d_forward(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, int[2] dilation, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d_forward.out(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, int[2] dilation, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, weight, kernel_size, bias, stride, padding, dilation);
 }
 static inline Tensor thnn_conv_depthwise2d_forward(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) {
@@ -5227,15 +5352,15 @@ static inline Tensor thnn_conv_depthwise2d_forward(const Tensor & self, const Te
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding, dilation);
 }
 static inline std::tuple<Tensor &,Tensor &> thnn_conv_depthwise2d_backward_out(Tensor & grad_input, Tensor & grad_weight, const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight) -> (Tensor(a!), Tensor(b!))");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight) -> (Tensor(a!), Tensor(b!))");
     return table->getOp<std::tuple<Tensor &,Tensor &> (Tensor &, Tensor &, const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_weight, grad_output, self, weight, kernel_size, stride, padding, dilation);
 }
 static inline std::tuple<Tensor,Tensor> thnn_conv_depthwise2d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation, std::array<bool,2> output_mask) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv_depthwise2d_backward.output_mask(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[2] output_mask) -> (Tensor grad_input, Tensor grad_weight)");
     return table->getOp<std::tuple<Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, std::array<bool,2>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, weight, kernel_size, stride, padding, dilation, output_mask);
 }
 static inline Tensor & thnn_conv3d_out(Tensor & out, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d.out(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias=None, int[3] stride=1, int[3] padding=0, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, weight, kernel_size, bias, stride, padding);
 }
 static inline Tensor thnn_conv3d(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
@@ -5243,7 +5368,7 @@ static inline Tensor thnn_conv3d(const Tensor & self, const Tensor & weight, Int
     return table->getOp<Tensor (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding);
 }
 static inline std::tuple<Tensor &,Tensor &,Tensor &> thnn_conv3d_forward_out(Tensor & output, Tensor & finput, Tensor & fgrad_input, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d_forward(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias, int[3] stride, int[3] padding, *, Tensor(a!) output, Tensor(b!) finput, Tensor(c!) fgrad_input) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d_forward.output(Tensor self, Tensor weight, int[3] kernel_size, Tensor? bias, int[3] stride, int[3] padding, *, Tensor(a!) output, Tensor(b!) finput, Tensor(c!) fgrad_input) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
     return table->getOp<std::tuple<Tensor &,Tensor &,Tensor &> (Tensor &, Tensor &, Tensor &, const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(output, finput, fgrad_input, self, weight, kernel_size, bias, stride, padding);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> thnn_conv3d_forward(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding) {
@@ -5251,11 +5376,11 @@ static inline std::tuple<Tensor,Tensor,Tensor> thnn_conv3d_forward(const Tensor 
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, IntArrayRef, const Tensor &, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, weight, kernel_size, bias, stride, padding);
 }
 static inline std::tuple<Tensor &,Tensor &,Tensor &> thnn_conv3d_backward_out(Tensor & grad_input, Tensor & grad_weight, Tensor & grad_bias, const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, const Tensor & finput, const Tensor & fgrad_input) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d_backward(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, Tensor finput, Tensor fgrad_input, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, Tensor finput, Tensor fgrad_input, *, Tensor?(a!) grad_input, Tensor?(b!) grad_weight, Tensor?(c!) grad_bias) -> (Tensor(a!), Tensor(b!), Tensor(c!))");
     return table->getOp<std::tuple<Tensor &,Tensor &,Tensor &> (Tensor &, Tensor &, Tensor &, const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_input, grad_weight, grad_bias, grad_output, self, weight, kernel_size, stride, padding, finput, fgrad_input);
 }
 static inline std::tuple<Tensor,Tensor,Tensor> thnn_conv3d_backward(const Tensor & grad_output, const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, const Tensor & finput, const Tensor & fgrad_input, std::array<bool,3> output_mask) {
-    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d_backward(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, Tensor finput, Tensor fgrad_input, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
+    static auto table = globalATenDispatch().getOpTable("aten::thnn_conv3d_backward.output_mask(Tensor grad_output, Tensor self, Tensor weight, int[3] kernel_size, int[3] stride, int[3] padding, Tensor finput, Tensor fgrad_input, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)");
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, const Tensor &, const Tensor &, std::array<bool,3>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, weight, kernel_size, stride, padding, finput, fgrad_input, output_mask);
 }
 static inline Tensor conv_dilated2d(const Tensor & self, const Tensor & weight, IntArrayRef kernel_size, const Tensor & bias, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) {
@@ -5275,7 +5400,7 @@ static inline std::tuple<Tensor,Tensor,Tensor> conv_dilated3d_backward(const Ten
     return table->getOp<std::tuple<Tensor,Tensor,Tensor> (const Tensor &, const Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, std::array<bool,3>)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(grad_output, self, weight, kernel_size, stride, padding, dilation, output_mask);
 }
 static inline Tensor & col2im_out(Tensor & out, const Tensor & self, IntArrayRef output_size, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {
-    static auto table = globalATenDispatch().getOpTable("aten::col2im(Tensor self, int[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::col2im.out(Tensor self, int[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, output_size, kernel_size, dilation, padding, stride);
 }
 static inline Tensor col2im(const Tensor & self, IntArrayRef output_size, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {
@@ -5283,7 +5408,7 @@ static inline Tensor col2im(const Tensor & self, IntArrayRef output_size, IntArr
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, output_size, kernel_size, dilation, padding, stride);
 }
 static inline Tensor & col2im_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {
-    static auto table = globalATenDispatch().getOpTable("aten::col2im_backward(Tensor grad_output, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::col2im_backward.grad_input(Tensor grad_output, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, kernel_size, dilation, padding, stride);
 }
 static inline Tensor col2im_backward(const Tensor & grad_output, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {
@@ -5291,7 +5416,7 @@ static inline Tensor col2im_backward(const Tensor & grad_output, IntArrayRef ker
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_output), at::detail::infer_is_variable(grad_output))(grad_output, kernel_size, dilation, padding, stride);
 }
 static inline Tensor & im2col_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {
-    static auto table = globalATenDispatch().getOpTable("aten::im2col(Tensor self, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::im2col.out(Tensor self, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(out, self, kernel_size, dilation, padding, stride);
 }
 static inline Tensor im2col(const Tensor & self, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {
@@ -5299,7 +5424,7 @@ static inline Tensor im2col(const Tensor & self, IntArrayRef kernel_size, IntArr
     return table->getOp<Tensor (const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(self), at::detail::infer_is_variable(self))(self, kernel_size, dilation, padding, stride);
 }
 static inline Tensor & im2col_backward_out(Tensor & grad_input, const Tensor & grad_output, IntArrayRef input_size, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {
-    static auto table = globalATenDispatch().getOpTable("aten::im2col_backward(Tensor grad_output, int[2] input_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) grad_input) -> Tensor(a!)");
+    static auto table = globalATenDispatch().getOpTable("aten::im2col_backward.grad_input(Tensor grad_output, int[2] input_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) grad_input) -> Tensor(a!)");
     return table->getOp<Tensor & (Tensor &, const Tensor &, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef, IntArrayRef)>(at::detail::infer_backend(grad_input), at::detail::infer_is_variable(grad_input))(grad_input, grad_output, input_size, kernel_size, dilation, padding, stride);
 }
 static inline Tensor im2col_backward(const Tensor & grad_output, IntArrayRef input_size, IntArrayRef kernel_size, IntArrayRef dilation, IntArrayRef padding, IntArrayRef stride) {

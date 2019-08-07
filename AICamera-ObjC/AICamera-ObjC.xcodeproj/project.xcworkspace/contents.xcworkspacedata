@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:AICamera-ObjC.xcodeproj">
+      location = "group:../AICamera-ObjC/libs-no-caffe-ios/lib/libtorch_ios_arm64_no_bitcode.a">
+   </FileRef>
+   <FileRef
+      location = "self:">
    </FileRef>
 </Workspace>

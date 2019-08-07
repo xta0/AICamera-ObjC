@@ -23,7 +23,7 @@ namespace torch { namespace autograd {
 struct Variable;
 using at::Context;
 using at::Device;
-#ifdef NAMEDTENSOR_ENABLED
+#ifdef BUILD_NAMEDTENSOR
 using at::Dimname;
 using at::DimnameList;
 #endif
@@ -127,7 +127,7 @@ struct TORCH_API VariableType final {
   static Tensor _fft_with_size(const Tensor & self, int64_t signal_ndim, bool complex_input, bool complex_output, bool inverse, IntArrayRef checked_signal_sizes, bool normalized, bool onesided, IntArrayRef output_sizes) ;
   static std::tuple<Tensor,Tensor> _fused_dropout(const Tensor & self, double p, Generator * generator) ;
   static Tensor _gather_sparse_backward(const Tensor & self, int64_t dim, const Tensor & index, const Tensor & grad) ;
-  static bool _has_same_tensorimpl_type(const Tensor & self, const Tensor & other) ;
+  static bool _has_compatible_shallow_copy_type(const Tensor & self, const Tensor & from) ;
   static Tensor & _index_copy_(Tensor & self, int64_t dim, const Tensor & index, const Tensor & source) ;
   static Tensor & _index_put_impl_(Tensor & self, TensorList indices, const Tensor & values, bool accumulate, bool unsafe) ;
   static Tensor _indices(const Tensor & self) ;
@@ -135,6 +135,7 @@ struct TORCH_API VariableType final {
   static Scalar _local_scalar_dense(const Tensor & self) ;
   static Tensor _log_softmax(const Tensor & self, int64_t dim, bool half_to_float) ;
   static Tensor _log_softmax_backward_data(const Tensor & grad_output, const Tensor & output, int64_t dim, const Tensor & self) ;
+  static Tensor _lu_solve_helper(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots) ;
   static std::tuple<Tensor,Tensor,Tensor> _lu_with_info(const Tensor & self, bool pivot, bool check_errors) ;
   static Tensor _masked_scale(const Tensor & self, const Tensor & mask, double scale) ;
   static std::tuple<Tensor,Tensor> _max(const Tensor & self, int64_t dim, bool keepdim) ;
@@ -192,6 +193,7 @@ struct TORCH_API VariableType final {
   static Tensor _standard_gamma(const Tensor & self, Generator * generator) ;
   static Tensor _standard_gamma_grad(const Tensor & self, const Tensor & output) ;
   static Tensor _std(const Tensor & self, bool unbiased) ;
+  static std::tuple<Tensor,Tensor,Tensor> _svd_helper(const Tensor & self, bool some, bool compute_uv) ;
   static std::tuple<Tensor,Tensor> _symeig_helper(const Tensor & self, bool eigenvectors, bool upper) ;
   static std::tuple<Tensor,Tensor> _thnn_fused_gru_cell(const Tensor & input_gates, const Tensor & hidden_gates, const Tensor & hx, const Tensor & input_bias, const Tensor & hidden_bias) ;
   static std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> _thnn_fused_gru_cell_backward(const Tensor & grad_hy, const Tensor & workspace, bool has_bias) ;
@@ -285,14 +287,14 @@ struct TORCH_API VariableType final {
   static Tensor & atan_(Tensor & self) ;
   static Tensor & atan_out(Tensor & out, const Tensor & self) ;
   static Tensor avg_pool1d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor avg_pool2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor & avg_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor & avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor avg_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor avg_pool3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor & avg_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
-  static Tensor & avg_pool3d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad) ;
+  static Tensor avg_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
+  static Tensor avg_pool2d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
+  static Tensor & avg_pool2d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
+  static Tensor & avg_pool2d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
+  static Tensor avg_pool3d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
+  static Tensor avg_pool3d_backward(const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
+  static Tensor & avg_pool3d_backward_out(Tensor & grad_input, const Tensor & grad_output, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
+  static Tensor & avg_pool3d_out(Tensor & out, const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) ;
   static void backward(const Tensor & self, const Tensor & gradient, bool keep_graph, bool create_graph) ;
   static Tensor baddbmm(const Tensor & self, const Tensor & batch1, const Tensor & batch2, Scalar beta, Scalar alpha) ;
   static Tensor & baddbmm_(Tensor & self, const Tensor & batch1, const Tensor & batch2, Scalar beta, Scalar alpha) ;
@@ -304,6 +306,7 @@ struct TORCH_API VariableType final {
   static std::tuple<Tensor,Tensor,Tensor,Tensor> batch_norm_backward_reduce(const Tensor & grad_out, const Tensor & input, const Tensor & mean, const Tensor & invstd, bool input_g, bool weight_g, bool bias_g) ;
   static Tensor batch_norm_elemt(const Tensor & input, const Tensor & weight, const Tensor & bias, const Tensor & mean, const Tensor & invstd, double eps) ;
   static std::tuple<Tensor,Tensor> batch_norm_gather_stats(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, int64_t count) ;
+  static std::tuple<Tensor,Tensor> batch_norm_gather_stats_with_counts(const Tensor & input, const Tensor & mean, const Tensor & invstd, const Tensor & running_mean, const Tensor & running_var, double momentum, double eps, IntArrayRef counts) ;
   static std::tuple<Tensor,Tensor> batch_norm_stats(const Tensor & input, double eps) ;
   static std::tuple<Tensor,Tensor> batch_norm_update_stats(const Tensor & input, const Tensor & running_mean, const Tensor & running_var, double momentum) ;
   static Tensor bernoulli(const Tensor & self, Generator * generator) ;
@@ -319,6 +322,9 @@ struct TORCH_API VariableType final {
   static Tensor binary_cross_entropy_with_logits(const Tensor & self, const Tensor & target, const Tensor & weight, const Tensor & pos_weight, int64_t reduction) ;
   static Tensor binary_cross_entropy_with_logits_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, const Tensor & pos_weight, int64_t reduction) ;
   static Tensor bincount(const Tensor & self, const Tensor & weights, int64_t minlength) ;
+  static Tensor bitwise_not(const Tensor & self) ;
+  static Tensor & bitwise_not_(Tensor & self) ;
+  static Tensor & bitwise_not_out(Tensor & out, const Tensor & self) ;
   static Tensor blackman_window(int64_t window_length, const TensorOptions & options) ;
   static Tensor blackman_window(int64_t window_length, bool periodic, const TensorOptions & options) ;
   static Tensor bmm(const Tensor & self, const Tensor & mat2) ;
@@ -487,9 +493,13 @@ struct TORCH_API VariableType final {
   static Tensor eye(int64_t n, int64_t m, const TensorOptions & options) ;
   static Tensor & eye_out(Tensor & out, int64_t n) ;
   static Tensor & eye_out(Tensor & out, int64_t n, int64_t m) ;
+  static Tensor fake_quantize_per_tensor_affine(const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max) ;
+  static Tensor fake_quantize_per_tensor_affine_backward(const Tensor & grad, const Tensor & self, double scale, int64_t zero_point, int64_t quant_min, int64_t quant_max) ;
   static bool fbgemm_is_cpu_supported() ;
+  static Tensor fbgemm_linear_fp16_weight(const Tensor & input, const Tensor & packed_weight, const Tensor & bias) ;
   static Tensor fbgemm_linear_int8_weight(const Tensor & input, const Tensor & weight, const Tensor & packed, const Tensor & col_offsets, Scalar weight_scale, Scalar weight_zero_point, const Tensor & bias) ;
   static std::tuple<Tensor,Tensor,double,int64_t> fbgemm_linear_quantize_weight(const Tensor & input) ;
+  static Tensor fbgemm_pack_gemm_matrix_fp16(const Tensor & input) ;
   static Tensor fbgemm_pack_quantized_matrix(const Tensor & input, int64_t K, int64_t N) ;
   static Tensor feature_alpha_dropout(const Tensor & input, double p, bool train) ;
   static Tensor & feature_alpha_dropout_(Tensor & self, double p, bool train) ;
@@ -498,6 +508,7 @@ struct TORCH_API VariableType final {
   static Tensor fft(const Tensor & self, int64_t signal_ndim, bool normalized) ;
   static Tensor & fill_(Tensor & self, Scalar value) ;
   static Tensor & fill_(Tensor & self, const Tensor & value) ;
+  static Tensor & fill_diagonal_(Tensor & self, Scalar fill_value, bool wrap) ;
   static Tensor flatten(const Tensor & self, int64_t start_dim, int64_t end_dim) ;
   static Tensor flip(const Tensor & self, IntArrayRef dims) ;
   static Tensor floor(const Tensor & self) ;
@@ -536,8 +547,6 @@ struct TORCH_API VariableType final {
   static Tensor & ge_(Tensor & self, const Tensor & other) ;
   static Tensor & ge_out(Tensor & out, const Tensor & self, Scalar other) ;
   static Tensor & ge_out(Tensor & out, const Tensor & self, const Tensor & other) ;
-  static std::tuple<Tensor,Tensor> gels(const Tensor & self, const Tensor & A) ;
-  static std::tuple<Tensor &,Tensor &> gels_out(Tensor & X, Tensor & qr, const Tensor & self, const Tensor & A) ;
   static Tensor gelu(const Tensor & self) ;
   static Tensor gelu_backward(const Tensor & grad, const Tensor & self) ;
   static Tensor & geometric_(Tensor & self, double p, Generator * generator) ;
@@ -611,6 +620,7 @@ struct TORCH_API VariableType final {
   static bool is_distributed(const Tensor & self) ;
   static bool is_floating_point(const Tensor & self) ;
   static bool is_nonzero(const Tensor & self) ;
+  static bool is_pinned(const Tensor & self) ;
   static bool is_same_size(const Tensor & self, const Tensor & other) ;
   static bool is_set_to(const Tensor & self, const Tensor & tensor) ;
   static bool is_signed(const Tensor & self) ;
@@ -677,6 +687,8 @@ struct TORCH_API VariableType final {
   static std::tuple<Tensor,Tensor,Tensor> lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) ;
   static std::tuple<Tensor,Tensor,Tensor> lstm(const Tensor & data, const Tensor & batch_sizes, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional) ;
   static std::tuple<Tensor,Tensor> lstm_cell(const Tensor & input, TensorList hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh) ;
+  static std::tuple<Tensor,Tensor> lstsq(const Tensor & self, const Tensor & A) ;
+  static std::tuple<Tensor &,Tensor &> lstsq_out(Tensor & X, Tensor & qr, const Tensor & self, const Tensor & A) ;
   static Tensor lt(const Tensor & self, Scalar other) ;
   static Tensor lt(const Tensor & self, const Tensor & other) ;
   static Tensor & lt_(Tensor & self, Scalar other) ;
@@ -753,6 +765,8 @@ struct TORCH_API VariableType final {
   static std::tuple<Tensor,Tensor,Tensor> miopen_depthwise_convolution_backward(const Tensor & self, const Tensor & grad_output, const Tensor & weight, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic, std::array<bool,3> output_mask) ;
   static Tensor miopen_depthwise_convolution_backward_input(IntArrayRef self_size, const Tensor & grad_output, const Tensor & weight, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic) ;
   static Tensor miopen_depthwise_convolution_backward_weight(IntArrayRef weight_size, const Tensor & grad_output, const Tensor & self, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, bool benchmark, bool deterministic) ;
+  static std::tuple<Tensor,Tensor,Tensor,Tensor,Tensor> miopen_rnn(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & hx, const Tensor & cx, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state) ;
+  static std::tuple<Tensor,Tensor,Tensor,std::vector<Tensor>> miopen_rnn_backward(const Tensor & input, TensorList weight, int64_t weight_stride0, const Tensor & weight_buf, const Tensor & hx, const Tensor & cx, const Tensor & output, const Tensor & grad_output, const Tensor & grad_hy, const Tensor & grad_cy, int64_t mode, int64_t hidden_size, int64_t num_layers, bool batch_first, double dropout, bool train, bool bidirectional, IntArrayRef batch_sizes, const Tensor & dropout_state, const Tensor & reserve, std::array<bool,4> output_mask) ;
   static Tensor mkldnn_adaptive_avg_pool2d(const Tensor & self, IntArrayRef output_size) ;
   static Tensor mkldnn_convolution(const Tensor & self, const Tensor & weight, const Tensor & bias, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups) ;
   static std::tuple<Tensor,Tensor,Tensor> mkldnn_convolution_backward(const Tensor & self, const Tensor & grad_output, const Tensor & weight, IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups, std::array<bool,3> output_mask) ;
@@ -832,10 +846,12 @@ struct TORCH_API VariableType final {
   static Tensor normal(const Tensor & mean, double std, Generator * generator) ;
   static Tensor normal(double mean, const Tensor & std, Generator * generator) ;
   static Tensor normal(const Tensor & mean, const Tensor & std, Generator * generator) ;
+  static Tensor normal(double mean, double std, IntArrayRef size, Generator * generator, const TensorOptions & options) ;
   static Tensor & normal_(Tensor & self, double mean, double std, Generator * generator) ;
   static Tensor & normal_out(Tensor & out, const Tensor & mean, double std, Generator * generator) ;
   static Tensor & normal_out(Tensor & out, double mean, const Tensor & std, Generator * generator) ;
   static Tensor & normal_out(Tensor & out, const Tensor & mean, const Tensor & std, Generator * generator) ;
+  static Tensor & normal_out(Tensor & out, double mean, double std, IntArrayRef size, Generator * generator) ;
   static Tensor nuclear_norm(const Tensor & self, bool keepdim) ;
   static Tensor nuclear_norm(const Tensor & self, IntArrayRef dim, bool keepdim) ;
   static Tensor & nuclear_norm_out(Tensor & out, const Tensor & self, bool keepdim) ;
@@ -875,8 +891,6 @@ struct TORCH_API VariableType final {
   static Tensor prod(const Tensor & self, c10::optional<ScalarType> dtype) ;
   static Tensor prod(const Tensor & self, int64_t dim, bool keepdim, c10::optional<ScalarType> dtype) ;
   static Tensor & prod_out(Tensor & out, const Tensor & self, int64_t dim, bool keepdim, c10::optional<ScalarType> dtype) ;
-  static std::tuple<Tensor,Tensor> pstrf(const Tensor & self, bool upper, Scalar tol) ;
-  static std::tuple<Tensor &,Tensor &> pstrf_out(Tensor & u, Tensor & pivot, const Tensor & self, bool upper, Scalar tol) ;
   static Tensor & put_(Tensor & self, const Tensor & index, const Tensor & source, bool accumulate) ;
   static double q_scale(const Tensor & self) ;
   static int64_t q_zero_point(const Tensor & self) ;
@@ -885,9 +899,12 @@ struct TORCH_API VariableType final {
   static QScheme qscheme(const Tensor & self) ;
   static Tensor quantize_linear(const Tensor & self, double scale, int64_t zero_point, ScalarType dtype) ;
   static Tensor quantize_linear_per_channel(const Tensor & self, const Tensor & scales, const Tensor & zero_points, IntArrayRef axis, ScalarType dtype) ;
+  static std::tuple<Tensor,Tensor> quantized_gru(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) ;
+  static std::tuple<Tensor,Tensor> quantized_gru(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional) ;
   static Tensor quantized_gru_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh) ;
-  static std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first) ;
+  static std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first, c10::optional<ScalarType> dtype) ;
   static std::tuple<Tensor,Tensor> quantized_lstm_cell(const Tensor & input, TensorList hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh) ;
+  static Tensor quantized_max_pool2d(const Tensor & self, IntArrayRef kernel_size, IntArrayRef stride, IntArrayRef padding, IntArrayRef dilation) ;
   static Tensor quantized_rnn_relu_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh) ;
   static Tensor quantized_rnn_tanh_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh) ;
   static Tensor rand(IntArrayRef size, const TensorOptions & options) ;
@@ -1200,6 +1217,7 @@ struct TORCH_API VariableType final {
   static Tensor view(const Tensor & self, IntArrayRef size) ;
   static Tensor view_as(const Tensor & self, const Tensor & other) ;
   static Tensor where(const Tensor & condition, const Tensor & self, const Tensor & other) ;
+  static std::vector<Tensor> where(const Tensor & condition) ;
   static Tensor & zero_(Tensor & self) ;
   static Tensor zeros(IntArrayRef size, const TensorOptions & options) ;
   static Tensor zeros_like(const Tensor & self) ;

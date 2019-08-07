@@ -17,6 +17,9 @@ struct CAFFE2_API TypeDefault {
   static Tensor _cast_Half(const Tensor & self, bool non_blocking);
   static void backward(const Tensor & self, const Tensor & gradient, bool keep_graph, bool create_graph);
   static void set_data(const Tensor & self, const Tensor & new_data);
+  #ifdef BUILD_NAMEDTENSOR
+  static Tensor & set_names_(Tensor & self, c10::optional<DimnameList> names);
+  #endif
   static int64_t _debug_has_internal_overlap(const Tensor & self);
   static std::tuple<Tensor,Tensor> _sobol_engine_draw(const Tensor & quasi, int64_t n, const Tensor & sobolstate, int64_t dimension, int64_t num_generated, c10::optional<ScalarType> dtype);
   static Tensor & _sobol_engine_ff_(Tensor & self, int64_t n, const Tensor & sobolstate, int64_t dimension, int64_t num_generated);
@@ -71,6 +74,8 @@ struct CAFFE2_API TypeDefault {
   static Tensor bilinear(const Tensor & input1, const Tensor & input2, const Tensor & weight, const Tensor & bias);
   static Tensor binary_cross_entropy_with_logits(const Tensor & self, const Tensor & target, const Tensor & weight, const Tensor & pos_weight, int64_t reduction);
   static Tensor binary_cross_entropy_with_logits_backward(const Tensor & grad_output, const Tensor & self, const Tensor & target, const Tensor & weight, const Tensor & pos_weight, int64_t reduction);
+  static Tensor bitwise_not(const Tensor & self);
+  static Tensor & bitwise_not_(Tensor & self);
   static Tensor blackman_window(int64_t window_length, const TensorOptions & options);
   static Tensor blackman_window(int64_t window_length, bool periodic, const TensorOptions & options);
   static std::vector<Tensor> broadcast_tensors(TensorList tensors);
@@ -111,6 +116,7 @@ struct CAFFE2_API TypeDefault {
   static Tensor diag_embed(const Tensor & self, int64_t offset, int64_t dim1, int64_t dim2);
   static Tensor diagflat(const Tensor & self, int64_t offset);
   static Tensor diagonal(const Tensor & self, int64_t offset, int64_t dim1, int64_t dim2);
+  static Tensor & fill_diagonal_(Tensor & self, Scalar fill_value, bool wrap);
   static Tensor div(const Tensor & self, const Tensor & other);
   static Tensor & div_(Tensor & self, const Tensor & other);
   static Tensor & div_out(Tensor & out, const Tensor & self, const Tensor & other);
@@ -124,7 +130,7 @@ struct CAFFE2_API TypeDefault {
   static std::tuple<Tensor,Tensor,Tensor,Tensor> embedding_bag(const Tensor & weight, const Tensor & indices, const Tensor & offsets, bool scale_grad_by_freq, int64_t mode, bool sparse, const Tensor & per_sample_weights);
   static Tensor _embedding_bag_backward(const Tensor & grad, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, const Tensor & bag_size, const Tensor & maximum_indices, int64_t num_weights, bool scale_grad_by_freq, int64_t mode, bool sparse, const Tensor & per_sample_weights);
   static Tensor _embedding_bag_sparse_backward(const Tensor & grad, const Tensor & indices, const Tensor & offsets, const Tensor & offset2bag, const Tensor & bag_size, int64_t num_weights, bool scale_grad_by_freq, int64_t mode, const Tensor & per_sample_weights);
-  #ifdef NAMEDTENSOR_ENABLED
+  #ifdef BUILD_NAMEDTENSOR
   static Tensor empty(IntArrayRef size, c10::optional<DimnameList> names, const TensorOptions & options);
   #endif
   static Tensor & empty_out(Tensor & out, IntArrayRef size, c10::optional<MemoryFormat> memory_format);
@@ -187,6 +193,8 @@ struct CAFFE2_API TypeDefault {
   static Tensor linear(const Tensor & input, const Tensor & weight, const Tensor & bias);
   static Tensor fbgemm_linear_int8_weight(const Tensor & input, const Tensor & weight, const Tensor & packed, const Tensor & col_offsets, Scalar weight_scale, Scalar weight_zero_point, const Tensor & bias);
   static std::tuple<Tensor,Tensor,double,int64_t> fbgemm_linear_quantize_weight(const Tensor & input);
+  static Tensor fbgemm_pack_gemm_matrix_fp16(const Tensor & input);
+  static Tensor fbgemm_linear_fp16_weight(const Tensor & input, const Tensor & packed_weight, const Tensor & bias);
   static Tensor fbgemm_pack_quantized_matrix(const Tensor & input, int64_t K, int64_t N);
   static bool fbgemm_is_cpu_supported();
   static Tensor linspace(Scalar start, Scalar end, int64_t steps, const TensorOptions & options);
@@ -251,6 +259,7 @@ struct CAFFE2_API TypeDefault {
   static Tensor permute(const Tensor & self, IntArrayRef dims);
   static Tensor numpy_T(const Tensor & self);
   static Tensor pixel_shuffle(const Tensor & self, int64_t upscale_factor);
+  static bool is_pinned(const Tensor & self);
   static Tensor pin_memory(const Tensor & self);
   static Tensor pinverse(const Tensor & self, double rcond);
   static Tensor poisson_nll_loss(const Tensor & input, const Tensor & target, bool log_input, bool full, double eps, int64_t reduction);
@@ -295,7 +304,7 @@ struct CAFFE2_API TypeDefault {
   static Tensor rrelu(const Tensor & self, Scalar lower, Scalar upper, bool training, Generator * generator);
   static Tensor & rrelu_(Tensor & self, Scalar lower, Scalar upper, bool training, Generator * generator);
   static Tensor rsqrt(const Tensor & self);
-  #ifdef NAMEDTENSOR_ENABLED
+  #ifdef BUILD_NAMEDTENSOR
   static Tensor select(const Tensor & self, Dimname dim, int64_t index);
   #endif
   static Tensor select(const Tensor & self, int64_t dim, int64_t index);
@@ -308,6 +317,9 @@ struct CAFFE2_API TypeDefault {
   static Tensor detach(const Tensor & self);
   static Tensor & detach_(Tensor & self);
   static int64_t size(const Tensor & self, int64_t dim);
+  #ifdef BUILD_NAMEDTENSOR
+  static int64_t size(const Tensor & self, Dimname dim);
+  #endif
   static Tensor slice(const Tensor & self, int64_t dim, int64_t start, int64_t end, int64_t step);
   static std::tuple<Tensor,Tensor> slogdet(const Tensor & self);
   static Tensor smm(const Tensor & self, const Tensor & mat2);
@@ -323,9 +335,18 @@ struct CAFFE2_API TypeDefault {
   static Tensor & stack_out(Tensor & out, TensorList tensors, int64_t dim);
   static Tensor stft(const Tensor & self, int64_t n_fft, c10::optional<int64_t> hop_length, c10::optional<int64_t> win_length, const Tensor & window, bool normalized, bool onesided);
   static int64_t stride(const Tensor & self, int64_t dim);
+  #ifdef BUILD_NAMEDTENSOR
+  static int64_t stride(const Tensor & self, Dimname dim);
+  #endif
   static Tensor sum(const Tensor & self, c10::optional<ScalarType> dtype);
   static Tensor sum(const Tensor & self, IntArrayRef dim, bool keepdim, c10::optional<ScalarType> dtype);
+  #ifdef BUILD_NAMEDTENSOR
+  static Tensor sum(const Tensor & self, DimnameList dim, bool keepdim, c10::optional<ScalarType> dtype);
+  #endif
   static Tensor & sum_out(Tensor & out, const Tensor & self, IntArrayRef dim, bool keepdim, c10::optional<ScalarType> dtype);
+  #ifdef BUILD_NAMEDTENSOR
+  static Tensor & sum_out(Tensor & out, const Tensor & self, DimnameList dim, bool keepdim, c10::optional<ScalarType> dtype);
+  #endif
   static Tensor sum_to_size(const Tensor & self, IntArrayRef size);
   static Tensor sqrt(const Tensor & self);
   static Tensor std(const Tensor & self, bool unbiased);
@@ -336,6 +357,12 @@ struct CAFFE2_API TypeDefault {
   static Tensor prod(const Tensor & self, c10::optional<ScalarType> dtype);
   static Tensor prod(const Tensor & self, int64_t dim, bool keepdim, c10::optional<ScalarType> dtype);
   static Tensor & prod_out(Tensor & out, const Tensor & self, int64_t dim, bool keepdim, c10::optional<ScalarType> dtype);
+  #ifdef BUILD_NAMEDTENSOR
+  static Tensor prod(const Tensor & self, Dimname dim, bool keepdim, c10::optional<ScalarType> dtype);
+  #endif
+  #ifdef BUILD_NAMEDTENSOR
+  static Tensor & prod_out(Tensor & out, const Tensor & self, Dimname dim, bool keepdim, c10::optional<ScalarType> dtype);
+  #endif
   static Tensor t(const Tensor & self);
   static Tensor & t_(Tensor & self);
   static Tensor tan(const Tensor & self);
@@ -355,7 +382,7 @@ struct CAFFE2_API TypeDefault {
   static Tensor triplet_margin_loss(const Tensor & anchor, const Tensor & positive, const Tensor & negative, double margin, double p, double eps, bool swap, int64_t reduction);
   static Tensor trunc(const Tensor & self);
   static Tensor type_as(const Tensor & self, const Tensor & other);
-  static bool _has_same_tensorimpl_type(const Tensor & self, const Tensor & other);
+  static bool _has_compatible_shallow_copy_type(const Tensor & self, const Tensor & from);
   static Tensor _unsafe_view(const Tensor & self, IntArrayRef size);
   static Tensor unsqueeze(const Tensor & self, int64_t dim);
   static Tensor & unsqueeze_(Tensor & self, int64_t dim);
@@ -366,6 +393,7 @@ struct CAFFE2_API TypeDefault {
   static std::tuple<Tensor,Tensor> var_mean(const Tensor & self, IntArrayRef dim, bool unbiased, bool keepdim);
   static Tensor view_as(const Tensor & self, const Tensor & other);
   static Tensor where(const Tensor & condition, const Tensor & self, const Tensor & other);
+  static std::vector<Tensor> where(const Tensor & condition);
   static Tensor norm_except_dim(const Tensor & v, int64_t pow, int64_t dim);
   static Tensor _weight_norm(const Tensor & v, const Tensor & g, int64_t dim);
   static std::tuple<Tensor,Tensor> _weight_norm_differentiable_backward(const Tensor & grad_w, const Tensor & saved_v, const Tensor & saved_g, const Tensor & saved_norms, int64_t dim);
@@ -431,7 +459,9 @@ struct CAFFE2_API TypeDefault {
   static Tensor gru_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh);
   static Tensor rnn_tanh_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh);
   static Tensor rnn_relu_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh);
-  static std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first);
+  static std::tuple<Tensor,Tensor,Tensor> quantized_lstm(const Tensor & input, TensorList hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first, c10::optional<ScalarType> dtype);
+  static std::tuple<Tensor,Tensor> quantized_gru(const Tensor & input, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional, bool batch_first);
+  static std::tuple<Tensor,Tensor> quantized_gru(const Tensor & data, const Tensor & batch_sizes, const Tensor & hx, TensorList params, bool has_biases, int64_t num_layers, double dropout, bool train, bool bidirectional);
   static std::tuple<Tensor,Tensor> quantized_lstm_cell(const Tensor & input, TensorList hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
   static Tensor quantized_gru_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
   static Tensor quantized_rnn_relu_cell(const Tensor & input, const Tensor & hx, const Tensor & w_ih, const Tensor & w_hh, const Tensor & b_ih, const Tensor & b_hh, const Tensor & packed_ih, const Tensor & packed_hh, const Tensor & col_offsets_ih, const Tensor & col_offsets_hh, Scalar scale_ih, Scalar scale_hh, Scalar zero_point_ih, Scalar zero_point_hh);
@@ -458,6 +488,8 @@ struct CAFFE2_API TypeDefault {
   static std::tuple<Tensor,Tensor> triangular_solve(const Tensor & self, const Tensor & A, bool upper, bool transpose, bool unitriangular);
   static std::tuple<Tensor &,Tensor &> symeig_out(Tensor & e, Tensor & V, const Tensor & self, bool eigenvectors, bool upper);
   static std::tuple<Tensor,Tensor> symeig(const Tensor & self, bool eigenvectors, bool upper);
+  static std::tuple<Tensor &,Tensor &,Tensor &> svd_out(Tensor & U, Tensor & S, Tensor & V, const Tensor & self, bool some, bool compute_uv);
+  static std::tuple<Tensor,Tensor,Tensor> svd(const Tensor & self, bool some, bool compute_uv);
   static Tensor & cholesky_out(Tensor & out, const Tensor & self, bool upper);
   static Tensor cholesky(const Tensor & self, bool upper);
   static Tensor & cholesky_solve_out(Tensor & out, const Tensor & self, const Tensor & input2, bool upper);
@@ -466,9 +498,15 @@ struct CAFFE2_API TypeDefault {
   static std::tuple<Tensor &,Tensor &> solve_out(Tensor & solution, Tensor & lu, const Tensor & self, const Tensor & A);
   static std::tuple<Tensor &,Tensor &> qr_out(Tensor & Q, Tensor & R, const Tensor & self, bool some);
   static std::tuple<Tensor,Tensor> qr(const Tensor & self, bool some);
+  static Tensor & lu_solve_out(Tensor & out, const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
+  static Tensor lu_solve(const Tensor & self, const Tensor & LU_data, const Tensor & LU_pivots);
   static Tensor argsort(const Tensor & self, int64_t dim, bool descending);
+  static std::tuple<Tensor,Tensor> topk(const Tensor & self, int64_t k, int64_t dim, bool largest, bool sorted);
   static Tensor all(const Tensor & self);
   static Tensor any(const Tensor & self);
+  static Tensor normal(double mean, double std, IntArrayRef size, Generator * generator, const TensorOptions & options);
+  static Tensor & normal_out(Tensor & out, double mean, double std, IntArrayRef size, Generator * generator);
+  static Tensor alias(const Tensor & self);
   static Tensor & multilabel_margin_loss_out(Tensor & out, const Tensor & self, const Tensor & target, int64_t reduction);
   static Tensor multilabel_margin_loss(const Tensor & self, const Tensor & target, int64_t reduction);
   static Tensor & nll_loss_out(Tensor & out, const Tensor & self, const Tensor & target, const Tensor & weight, int64_t reduction, int64_t ignore_index);
