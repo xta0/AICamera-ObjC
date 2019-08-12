@@ -59,15 +59,14 @@
             self.sampleImageView.image = image;
         }
     });
-    __block NSString* content = @"";
-    __weak typeof(self) weakSelf = self;
     [self.modelManager predict:tensor
                     completion:^(std::vector<std::tuple<float, std::string>>&& results) {
+        NSString* content = @"";
         for(auto& result: results){
             NSString* str = [NSString stringWithFormat:@"score: %.3f, label: %s \n", std::get<0>(result), std::get<1>(result).c_str()];
             content = [content stringByAppendingString:str];
             dispatch_async(dispatch_get_main_queue(), ^{
-                weakSelf.resultView.text = content;
+                self.resultView.text = content;
             });
         }
     }];
