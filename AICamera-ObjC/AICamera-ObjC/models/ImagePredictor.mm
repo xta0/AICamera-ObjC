@@ -3,7 +3,7 @@
 //
 
 #import "ImagePredictor.h"
-#import <torch/script.h>
+#import <Pytorch-Exp/Pytorch.h>
 #include <ctime>
 
 
