@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		623E50F653917C4ACF031B9B /* libPods-AICamera-ObjC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B2A07270E4CEFDDDA6E2829 /* libPods-AICamera-ObjC.a */; };
 		A040736922DACC1800F7C712 /* CameraHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = A040736822DACC1800F7C712 /* CameraHelper.mm */; };
 		A070072622DA5B0800DC1E9F /* pytorch-logo-light.png in Resources */ = {isa = PBXBuildFile; fileRef = A070072522DA5B0800DC1E9F /* pytorch-logo-light.png */; };
 		A070072822DA601E00DC1E9F /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A070072722DA601E00DC1E9F /* Accelerate.framework */; };
@@ -27,8 +26,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5B2A07270E4CEFDDDA6E2829 /* libPods-AICamera-ObjC.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AICamera-ObjC.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8976B2675E129B761D77837F /* Pods-AICamera-ObjC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AICamera-ObjC.release.xcconfig"; path = "Target Support Files/Pods-AICamera-ObjC/Pods-AICamera-ObjC.release.xcconfig"; sourceTree = "<group>"; };
 		A040736822DACC1800F7C712 /* CameraHelper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CameraHelper.mm; sourceTree = "<group>"; };
 		A070072422DA4D9B00DC1E9F /* CameraHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CameraHelper.h; sourceTree = "<group>"; };
 		A070072522DA5B0800DC1E9F /* pytorch-logo-light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "pytorch-logo-light.png"; sourceTree = "<group>"; };
@@ -53,7 +50,6 @@
 		A0FDD46122D7D5C8000C4CEE /* CameraPreview.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CameraPreview.m; sourceTree = "<group>"; };
 		A0FDD46322D7D7E7000C4CEE /* CameraSessionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CameraSessionManager.h; sourceTree = "<group>"; };
 		A0FDD46422D7D7E7000C4CEE /* CameraSessionManager.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CameraSessionManager.mm; sourceTree = "<group>"; };
-		DF4E8F9C049B7EDCC9FA9DCA /* Pods-AICamera-ObjC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AICamera-ObjC.debug.xcconfig"; path = "Target Support Files/Pods-AICamera-ObjC/Pods-AICamera-ObjC.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,22 +60,12 @@
 				A070072822DA601E00DC1E9F /* Accelerate.framework in Frameworks */,
 				A0D7723F22D93F11008FB575 /* libc++.tbd in Frameworks */,
 				A0FDD45E22D7CB54000C4CEE /* AVFoundation.framework in Frameworks */,
-				623E50F653917C4ACF031B9B /* libPods-AICamera-ObjC.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		65ED8302473589C6CBCF28F9 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				DF4E8F9C049B7EDCC9FA9DCA /* Pods-AICamera-ObjC.debug.xcconfig */,
-				8976B2675E129B761D77837F /* Pods-AICamera-ObjC.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		A0D7724022D94286008FB575 /* models */ = {
 			isa = PBXGroup;
 			children = (
@@ -97,7 +83,6 @@
 				A0FDD44522D7A470000C4CEE /* AICamera-ObjC */,
 				A0FDD44422D7A470000C4CEE /* Products */,
 				A0FDD45C22D7CB54000C4CEE /* Frameworks */,
-				65ED8302473589C6CBCF28F9 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,7 +119,6 @@
 				A070072722DA601E00DC1E9F /* Accelerate.framework */,
 				A0D7723E22D93F11008FB575 /* libc++.tbd */,
 				A0FDD45D22D7CB54000C4CEE /* AVFoundation.framework */,
-				5B2A07270E4CEFDDDA6E2829 /* libPods-AICamera-ObjC.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -159,7 +143,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A0FDD45922D7A471000C4CEE /* Build configuration list for PBXNativeTarget "AICamera-ObjC" */;
 			buildPhases = (
-				A7F9D7DAFBAD8DFB86570FA9 /* [CP] Check Pods Manifest.lock */,
 				A0FDD43F22D7A470000C4CEE /* Sources */,
 				A0FDD44022D7A470000C4CEE /* Frameworks */,
 				A0FDD44122D7A470000C4CEE /* Resources */,
@@ -219,31 +202,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		A7F9D7DAFBAD8DFB86570FA9 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AICamera-ObjC-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A0FDD43F22D7A470000C4CEE /* Sources */ = {
@@ -396,13 +354,12 @@
 		};
 		A0FDD45A22D7A471000C4CEE /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DF4E8F9C049B7EDCC9FA9DCA /* Pods-AICamera-ObjC.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = GW8XWHWQR7;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -426,13 +383,12 @@
 		};
 		A0FDD45B22D7A471000C4CEE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8976B2675E129B761D77837F /* Pods-AICamera-ObjC.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = GW8XWHWQR7;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
