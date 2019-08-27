@@ -3,7 +3,7 @@
 //
 
 #import "ImagePredictor.h"
-#import <Pytorch-Exp/Pytorch.h>
+#import <PytorchExpObjC/PytorchExpObjC.h>
 #include <ctime>
 
 
@@ -11,7 +11,7 @@
 @end
 
 @implementation ImagePredictor{
-    torch::jit::script::Module _module;
+    PTHModule* _module;
     std::vector<std::string> _labels;
 }
 
@@ -30,7 +30,7 @@
     if(!modelPath || !labelPath){
         return NO;
     }
-    _module = torch::jit::load([modelPath cStringUsingEncoding:NSASCIIStringEncoding]);
+    _module = [PTHModule loadTorchscriptModel:modelPath];
     NSError* err;
     NSArray* labels = [[NSString stringWithContentsOfFile:labelPath
                                                  encoding:NSUTF8StringEncoding
@@ -52,29 +52,28 @@
     std::clock_t start;
     start = std::clock();
     std::shared_ptr<uint8_t> tensorBuffer(rawData);
-    at::Tensor img_tensor = torch::from_blob(tensorBuffer.get(), {1, IMG_W, IMG_H, IMG_C}, at::kByte).clone();
-    // pixel buffer is in WxHxC, make it CxWxH
-    img_tensor = img_tensor.permute({0,3,1,2});
-    img_tensor = img_tensor.toType(at::kFloat);
-    img_tensor.div_(255);
-    // normalize the input tensor
-    img_tensor[0][0].sub_(0.485).div_(0.229);
-    img_tensor[0][1].sub_(0.456).div_(0.224);
-    img_tensor[0][2].sub_(0.406).div_(0.225);
-    // run forward
-    std::vector<torch::jit::IValue> inputs{img_tensor};
-    auto outputs= self->_module.forward(inputs).toTensor();
-    self->_inferenceTime = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-    auto result = outputs.topk(5, -1);
-    //flat socres and indexes
-    auto scores = std::get<0>(result).view(-1);
-    auto idxs = std::get<1>(result).view(-1);
-    //collect top 10 results
+    
+    PTHTensor* imageTensor = [PTHTensor newWithType:PTHTensorTypeByte Size:@[ @(1), @(IMG_W), @(IMG_H), @(IMG_C) ] Data:tensorBuffer.get()];
+    imageTensor = [imageTensor permute:@[@(0),@(3),@(1),@(2)]];
+    imageTensor = [imageTensor to:PTHTensorTypeFloat];
+    //normalize the tensor
+    imageTensor = [imageTensor div_:255.0];
+    [[imageTensor[0][0] sub_:0.485] div_:0.229];
+    [[imageTensor[0][1] sub_:0.485] div_:0.229];
+    [[imageTensor[0][2] sub_:0.485] div_:0.229];
+    PTHIValue* inputIValue = [PTHIValue newIValueWithTensor:imageTensor];
+    PTHTensor* outputTensor = [[_module forward:@[inputIValue]] toTensor];
+     self->_inferenceTime = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+    //collect the top10 results
+    NSArray<PTHTensor* >* topkResults = [outputTensor topKResult:@(10) Dim:@(-1) isLargest:YES isSorted:YES];
+    PTHTensor* scores = [topkResults[0] view:@[@(-1)]];
+    PTHTensor* idxs   = [topkResults[1] view:@[@(-1)]];
+    
     std::vector<std::tuple<float,std::string>> results;
     for (int i = 0; i < 5; ++i) {
         results.push_back({
-            scores[i].item().toFloat(),
-            self->_labels[idxs[i].item().toInt()]
+            scores[i].item.floatValue,
+            self->_labels[idxs[i].item.longValue]
         });
     }
     self->_isPredicting = false;

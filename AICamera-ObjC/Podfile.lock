@@ -1,0 +1,33 @@
+PODS:
+  - PytorchExp (0.0.1):
+    - PytorchExp/Core (= 0.0.1)
+  - PytorchExp/Core (0.0.1):
+    - PytorchExp/Libtorch
+  - PytorchExp/Libtorch (0.0.1)
+  - PytorchExpObjC (0.0.1):
+    - PytorchExp
+
+DEPENDENCIES:
+  - PytorchExpObjC (from `https://github.com/xta0/PytorchExpObjC.git`, branch `master`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - PytorchExp
+
+EXTERNAL SOURCES:
+  PytorchExpObjC:
+    :branch: master
+    :git: https://github.com/xta0/PytorchExpObjC.git
+
+CHECKOUT OPTIONS:
+  PytorchExpObjC:
+    :commit: 052dd8da4aae36557f04ee441244501fe1d73900
+    :git: https://github.com/xta0/PytorchExpObjC.git
+
+SPEC CHECKSUMS:
+  PytorchExp: f700aadfe498196941ace700821c4f7d02fcea67
+  PytorchExpObjC: 9322cdf735778e91ae6b1082244b545372d05c95
+
+PODFILE CHECKSUM: 53c027b0a07c3427a36622b1764b9adcdbbe9552
+
+COCOAPODS: 1.7.1
