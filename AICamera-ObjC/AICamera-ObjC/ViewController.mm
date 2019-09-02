@@ -52,18 +52,11 @@
     [self.sessionManager stopSession];
 }
 
-- (void)cameraDidReceivePixelBuffer:(std::shared_ptr<uint8_t>)tensor sampleImage:(UIImage *)image {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        self.statusView.text = [self status];
-        if(image){
-            self.sampleImageView.image = image;
-        }
-    });
-    [self.modelManager predict:tensor
-                    completion:^(std::vector<std::tuple<float, std::string>>&& results) {
+- (void)cameraDidReceivePixelBuffer:(std::shared_ptr<float>)data sampleImage:(UIImage *)image {
+    [self.modelManager predict:data completion:^(NSArray<NSDictionary *> * _Nonnull sortedResults) {
         NSString* content = @"";
-        for(auto& result: results){
-            NSString* str = [NSString stringWithFormat:@"score: %.3f, label: %s \n", std::get<0>(result), std::get<1>(result).c_str()];
+        for (NSDictionary<NSNumber*, NSString*>* result in sortedResults){
+            NSString* str = [NSString stringWithFormat:@"score: %.3f, label: %@ \n", result.allKeys[0].floatValue,result.allValues[0]];
             content = [content stringByAppendingString:str];
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.resultView.text = content;

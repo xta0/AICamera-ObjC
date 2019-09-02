@@ -16,7 +16,7 @@ typedef NS_ENUM(NSUInteger, CameraSetupResult) {
 };
 
 @protocol CameraSeesion <NSObject>
-- (void)cameraDidReceivePixelBuffer:(std::shared_ptr<uint8_t>) pixels sampleImage:(UIImage* _Nullable)image;
+- (void)cameraDidReceivePixelBuffer:(std::shared_ptr<float>) pixels sampleImage:(UIImage* _Nullable)image;
 - (void)cameraPermissionDenied;
 - (void)cameraSetupFailed;
 - (void)cameraSessionWasInterrupted;

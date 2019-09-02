@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,assign, readonly) BOOL isPredicting;
 
 - (BOOL)loadModel:(NSString* _Nonnull )modelPath andLabels:(NSString* _Nonnull) labelPath ;
-- (void)predict:(std::shared_ptr<uint8_t> )rgbData completion:(void(^__nullable)(std::vector<std::tuple<float, std::string>>&& results))completion;
+- (void)predict:(std::shared_ptr<float> )data completion:(void(^__nullable)(NSArray<NSDictionary* >* sortedResults))completion;
 
 @end
 

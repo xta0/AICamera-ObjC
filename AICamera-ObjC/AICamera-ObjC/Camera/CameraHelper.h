@@ -17,7 +17,7 @@ void g_cvPixelBufferReleaseCallback(void * __nullable releaseRefCon, const void 
 void g_dataProviderReleaseCallback(void * __nullable info, const void * __nullable  data, size_t size);
 void g_callocReleaseCallback(void* __nullable p);
 
-static inline CGSize getCameraResolution(CVPixelBufferRef _Nonnull pixelBuffer){
+static inline CGSize cameraResolution(CVPixelBufferRef _Nonnull pixelBuffer){
     static dispatch_once_t onceToken;
     static size_t width = 0;
     static size_t height = 0;
@@ -28,7 +28,7 @@ static inline CGSize getCameraResolution(CVPixelBufferRef _Nonnull pixelBuffer){
     return (CGSize){(CGFloat)width,(CGFloat)height};
 }
 
-static inline CVPixelBufferRef _Nullable createPixelBufferForTensor(CVPixelBufferRef _Nonnull pixelBuffer ,size_t width, size_t height) {
+static inline CVPixelBufferRef _Nullable resizePixelBuffer(CVPixelBufferRef _Nonnull pixelBuffer ,size_t width, size_t height) {
     size_t imageWidth = CVPixelBufferGetWidth(pixelBuffer);
     size_t imageHeight = CVPixelBufferGetHeight(pixelBuffer);
     NSCAssert(CVPixelBufferGetPixelFormatType(pixelBuffer) == kCMPixelFormat_32BGRA, @"Pixel buffer is in wrong format");
@@ -85,16 +85,17 @@ static inline CVPixelBufferRef _Nullable createPixelBufferForTensor(CVPixelBuffe
 //    CVPixelBufferUnlockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
 //    return dstData;
 //}
-static inline std::shared_ptr<uint8_t> tensorData(CVPixelBufferRef _Nonnull pixelBuff, int w, int h) {
+static inline std::shared_ptr<float> normalizedBuffer(CVPixelBufferRef _Nonnull pixelBuff, int w, int h) {
     CVPixelBufferLockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);
     uint8_t* srcData = (uint8_t* )CVPixelBufferGetBaseAddress(pixelBuff);
-    std::shared_ptr<uint8_t> dstData((uint8_t* )calloc(w*h*3,sizeof(uint8_t)),g_callocReleaseCallback);
+    std::shared_ptr<float> dstData((float* )calloc(w*h*3,sizeof(float)),g_callocReleaseCallback);
     if(dstData){
+        //normalize the pixel buffer
+        //see https://pytorch.org/hub/pytorch_vision_resnet/ for more detail
         for(int i=0;i<w*h;++i){
-            //remove alpha channel
-            dstData.get()[i*3+0] = srcData[i*4+2]; //R
-            dstData.get()[i*3+1] = srcData[i*4+1]; //G
-            dstData.get()[i*3+2] = srcData[i*4+0]; //B
+            dstData.get()[i]        = (srcData[i*4+2]/255.0 - 0.485)/0.229; //R
+            dstData.get()[w*h+i]    = (srcData[i*4+1]/255.0 - 0.456)/0.224; //G
+            dstData.get()[w*h*2+i]  = (srcData[i*4+0]/255.0 - 0.406)/0.225; //B
         }
     }
     CVPixelBufferUnlockBaseAddress(pixelBuff,kCVPixelBufferLock_ReadOnly);

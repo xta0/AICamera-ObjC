@@ -171,11 +171,11 @@
     connection.videoOrientation = AVCaptureVideoOrientationPortrait;
     CVPixelBufferRef pixelBuffer =  CMSampleBufferGetImageBuffer(sampleBuffer);
     if(pixelBuffer) {
-        _cameraResulotion = getCameraResolution(pixelBuffer);
+        _cameraResulotion = cameraResolution(pixelBuffer);
         std::clock_t start;
         start = std::clock();
-        CVPixelBufferRef croppedBuffer = createPixelBufferForTensor(pixelBuffer, IMG_W, IMG_H);
-        auto data = tensorData(croppedBuffer, IMG_W, IMG_H);
+        CVPixelBufferRef croppedBuffer = resizePixelBuffer(pixelBuffer, IMG_W, IMG_H);
+        auto data = normalizedBuffer(croppedBuffer, IMG_W, IMG_H);
         UIImage* sampleImage = nil;
         if(self.generateSampleImage){
             sampleImage = rgbImage2(croppedBuffer,IMG_W,IMG_H);
